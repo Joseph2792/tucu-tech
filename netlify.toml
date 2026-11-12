@@ -1,0 +1,4 @@
+# Configuracion de Netlify para Tucu Tech
+[build]
+publish = "."
+functions = "."
