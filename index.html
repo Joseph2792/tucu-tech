@@ -59,7 +59,7 @@ body {
 header > *, .chat > *, form > * { box-sizing: border-box; }
 header, form { padding-left: max(12px, calc((100% - 760px) / 2 + 12px), env(safe-area-inset-left, 0px)) !important; padding-right: max(12px, calc((100% - 760px) / 2 + 12px), env(safe-area-inset-right, 0px)) !important; }
 .chat { padding-left: max(14px, calc((100% - 760px) / 2 + 14px)) !important; padding-right: max(14px, calc((100% - 760px) / 2 + 14px)) !important; }
-form { padding-bottom: max(8px, env(safe-area-inset-bottom, 0px)) !important; }
+form { padding-bottom: calc(max(8px, env(safe-area-inset-bottom, 0px)) + var(--badge-space, 0px)) !important; transition: padding-bottom .2s; }
 header { padding-top: max(10px, env(safe-area-inset-top, 0px)) !important; }
 header { display: flex; align-items: center; gap: 10px; padding: 10px 12px; background: var(--brand); color: var(--brand-ink); }
 .avatar { width: 42px; height: 42px; border-radius: 50%; flex: none; display: block; box-shadow: 0 0 0 2px rgba(255,255,255,.85); }
@@ -830,6 +830,23 @@ document.getElementById("resetAll")?.addEventListener("click", () => {
   if (busy) return;
   seen = new Set(); mem = { seen: [], lastQ: null, lastVisit: null }; save(mem); start();
 });
+/* Si el hosting agrega un sello flotante abajo (por ejemplo "Powered by Netlify"),
+   se deja espacio debajo del campo de mensaje para que no tape el micrófono ni el botón de enviar. */
+function avoidBadge() {
+  let h = 0;
+  for (const n of document.body.children) {
+    if (n.id === "intro" || n.classList.contains("wrap") || /^(SCRIPT|STYLE|LINK|TITLE|META)$/.test(n.tagName)) continue;
+    const cs = getComputedStyle(n);
+    if (cs.position !== "fixed" || cs.display === "none" || cs.visibility === "hidden") continue;
+    const r = n.getBoundingClientRect();
+    if (r.height > 0 && r.height < 160 && innerHeight - r.bottom < 80) h = Math.max(h, innerHeight - r.top);
+  }
+  document.documentElement.style.setProperty("--badge-space", h ? (h + 8) + "px" : "0px");
+}
+new MutationObserver(avoidBadge).observe(document.body, { childList: true, subtree: true, attributes: true, attributeFilter: ["style", "class", "hidden"] });
+addEventListener("resize", avoidBadge);
+[300, 1500, 4000].forEach(t => setTimeout(avoidBadge, t));
+
 /* La conversación arranca recién cuando la persona entra al chat */
 document.getElementById("enter").addEventListener("click", () => {
   document.getElementById("intro").classList.add("hide");
