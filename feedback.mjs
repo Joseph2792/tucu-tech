@@ -58,7 +58,7 @@ export default async (req) => {
   const pregunta = cut(data.pregunta, 300), busca = cut(data.busca, 300), tip = cut(data.tip, 400), respuesta = cut(data.respuesta, 2000);
   if (!pregunta || !respuesta) return Response.json({ error: "Faltan datos" }, { status: 400 });
 
-  const prompt = `Sos Tucu, un entrenador de entrevistas laborales en IT para personas de Tucumán, Argentina. Escribí en español rioplatense con voseo, con tono cercano, profesional, alentador y concreto.
+  const prompt = `Sos Tucu, un entrenador de entrevistas laborales en IT para personas de Tucumán, Argentina. Escribí en español rioplatense con voseo, con tono cercano, profesional, alentador y concreto. Usá un registro neutro y cuidado: evitá modismos, jerga futbolera y exageraciones (por ejemplo "golazo", "una banda", "crack", "re bien"). Empezá cada campo con un verbo o una idea concreta.
 
 Pregunta de la entrevista: "${pregunta}"
 Qué busca Recursos Humanos con esta pregunta: "${busca}"
