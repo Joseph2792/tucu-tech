@@ -3,25 +3,29 @@
 // una devolución orientativa en formato JSON. La clave de la API queda guardada en
 // Netlify (variable GEMINI_API_KEY) y nunca se ve en la página.
 
-// Modelo: se puede fijar con la variable GEMINI_MODEL. Si no existe o Google lo retiró,
-// la función busca sola un modelo "flash" disponible para tu clave.
-let MODEL = process.env.GEMINI_MODEL || "gemini-flash-latest";
+// Modelo: se puede fijar con la variable GEMINI_MODEL. Por defecto usa el "flash-lite" más
+// reciente (rápido y con más cupo gratuito). Si ese no responde, prueba con otro "flash"
+// disponible para tu clave. Cada intento tiene un límite de tiempo para no colgar la demo.
 const API = "https://generativelanguage.googleapis.com/v1beta";
+const FIRST = process.env.GEMINI_MODEL || "gemini-flash-lite-latest";
+let backup = null;
 
-async function pickModel(key) {
-  const r = await fetch(`${API}/models?pageSize=200`, { headers: { "x-goog-api-key": key } });
-  if (!r.ok) return null;
-  const { models = [] } = await r.json();
-  const ok = models.filter(m => (m.supportedGenerationMethods || []).includes("generateContent") && /flash/.test(m.name) && !/image|tts|audio|live|embedding|preview|exp/.test(m.name));
-  const pool = ok.length ? ok : models.filter(m => (m.supportedGenerationMethods || []).includes("generateContent") && /flash/.test(m.name));
-  pool.sort((a, b) => (/lite/.test(a.name) - /lite/.test(b.name)) || b.name.localeCompare(a.name, undefined, { numeric: true }));
-  return pool[0] ? pool[0].name.replace(/^models\//, "") : null;
+async function listFlash(key) {
+  try {
+    const r = await fetch(`${API}/models?pageSize=200`, { headers: { "x-goog-api-key": key }, signal: AbortSignal.timeout(2500) });
+    if (!r.ok) return [];
+    const { models = [] } = await r.json();
+    return models
+      .filter(m => (m.supportedGenerationMethods || []).includes("generateContent") && /flash/.test(m.name) && !/image|tts|audio|live|embedding|exp|think/.test(m.name))
+      .map(m => m.name.replace(/^models\//, ""))
+      .sort((a, b) => (/lite/.test(b) - /lite/.test(a)) || (/preview/.test(a) - /preview/.test(b)) || b.localeCompare(a, undefined, { numeric: true }));
+  } catch { return []; }
 }
 
-async function callGemini(key, prompt, withThinking) {
+async function callGemini(key, model, prompt, ms) {
   const generationConfig = {
     temperature: 0.4,
-    maxOutputTokens: 800,
+    maxOutputTokens: 600,
     responseMimeType: "application/json",
     responseSchema: {
       type: "OBJECT",
@@ -29,12 +33,18 @@ async function callGemini(key, prompt, withThinking) {
       required: ["bien", "mejorar", "consejo"]
     }
   };
-  if (withThinking) generationConfig.thinkingConfig = { thinkingBudget: 0 };
-  return fetch(`${API}/models/${MODEL}:generateContent`, {
+  const r = await fetch(`${API}/models/${model}:generateContent`, {
     method: "POST",
     headers: { "Content-Type": "application/json", "x-goog-api-key": key },
-    body: JSON.stringify({ contents: [{ role: "user", parts: [{ text: prompt }] }], generationConfig })
+    body: JSON.stringify({ contents: [{ role: "user", parts: [{ text: prompt }] }], generationConfig }),
+    signal: AbortSignal.timeout(ms)
   });
+  if (!r.ok) throw new Error(model + " " + r.status);
+  const out = await r.json();
+  const text = out?.candidates?.[0]?.content?.parts?.map(p => p.text || "").join("") || "";
+  const fb = JSON.parse(text);
+  if (typeof fb.bien !== "string" || typeof fb.mejorar !== "string" || typeof fb.consejo !== "string") throw new Error("Formato inesperado");
+  return fb;
 }
 
 export default async (req) => {
@@ -65,17 +75,22 @@ Devolvé un objeto JSON con tres campos de texto:
 - "consejo": una oración con el siguiente paso para practicar.
 Reglas: no inventes experiencia, datos ni logros que la persona no mencionó. No pongas puntajes ni digas si la contratarían. Si la respuesta no contesta la pregunta o es muy corta, decilo con amabilidad en "mejorar". Si tiene un dato técnico incorrecto, señalalo con respeto. Máximo 35 palabras por campo.`;
 
-  try {
-    let r = await callGemini(key, prompt, true);
-    if (r.status === 404) { const m = await pickModel(key); if (m) { MODEL = m; r = await callGemini(key, prompt, true); } }
-    if (r.status === 400) r = await callGemini(key, prompt, false);
-    if (!r.ok) return Response.json({ error: "Gemini respondió " + r.status, modelo: MODEL }, { status: 502 });
-    const out = await r.json();
-    const text = out?.candidates?.[0]?.content?.parts?.map(p => p.text || "").join("") || "";
-    const fb = JSON.parse(text);
-    if (typeof fb.bien !== "string" || typeof fb.mejorar !== "string" || typeof fb.consejo !== "string") throw new Error("Formato inesperado");
-    return Response.json({ bien: fb.bien, mejorar: fb.mejorar, consejo: fb.consejo });
-  } catch (e) {
-    return Response.json({ error: "No se pudo generar la devolución" }, { status: 502 });
+  const errores = [];
+  const t0 = Date.now();
+  const tries = [backup || FIRST];
+  for (let i = 0; i < 3 && Date.now() - t0 < 8000; i++) {
+    const model = tries[i];
+    if (!model) {
+      const list = (await listFlash(key)).filter(m => !tries.includes(m));
+      if (!list.length) break;
+      tries.push(list[0]);
+      i--; continue;
+    }
+    try {
+      const fb = await callGemini(key, model, prompt, i === 0 ? 4500 : Math.max(2000, 8500 - (Date.now() - t0)));
+      backup = model;
+      return Response.json({ bien: fb.bien, mejorar: fb.mejorar, consejo: fb.consejo, modelo: model });
+    } catch (e) { errores.push(String(e.message || e)); }
   }
+  return Response.json({ error: "No se pudo generar la devolución", detalle: errores }, { status: 502 });
 };
