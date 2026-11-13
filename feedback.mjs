@@ -3,7 +3,39 @@
 // una devolución orientativa en formato JSON. La clave de la API queda guardada en
 // Netlify (variable GEMINI_API_KEY) y nunca se ve en la página.
 
-const MODEL = process.env.GEMINI_MODEL || "gemini-2.5-flash";
+// Modelo: se puede fijar con la variable GEMINI_MODEL. Si no existe o Google lo retiró,
+// la función busca sola un modelo "flash" disponible para tu clave.
+let MODEL = process.env.GEMINI_MODEL || "gemini-flash-latest";
+const API = "https://generativelanguage.googleapis.com/v1beta";
+
+async function pickModel(key) {
+  const r = await fetch(`${API}/models?pageSize=200`, { headers: { "x-goog-api-key": key } });
+  if (!r.ok) return null;
+  const { models = [] } = await r.json();
+  const ok = models.filter(m => (m.supportedGenerationMethods || []).includes("generateContent") && /flash/.test(m.name) && !/image|tts|audio|live|embedding|preview|exp/.test(m.name));
+  const pool = ok.length ? ok : models.filter(m => (m.supportedGenerationMethods || []).includes("generateContent") && /flash/.test(m.name));
+  pool.sort((a, b) => (/lite/.test(a.name) - /lite/.test(b.name)) || b.name.localeCompare(a.name, undefined, { numeric: true }));
+  return pool[0] ? pool[0].name.replace(/^models\//, "") : null;
+}
+
+async function callGemini(key, prompt, withThinking) {
+  const generationConfig = {
+    temperature: 0.4,
+    maxOutputTokens: 800,
+    responseMimeType: "application/json",
+    responseSchema: {
+      type: "OBJECT",
+      properties: { bien: { type: "STRING" }, mejorar: { type: "STRING" }, consejo: { type: "STRING" } },
+      required: ["bien", "mejorar", "consejo"]
+    }
+  };
+  if (withThinking) generationConfig.thinkingConfig = { thinkingBudget: 0 };
+  return fetch(`${API}/models/${MODEL}:generateContent`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json", "x-goog-api-key": key },
+    body: JSON.stringify({ contents: [{ role: "user", parts: [{ text: prompt }] }], generationConfig })
+  });
+}
 
 export default async (req) => {
   if (req.method !== "POST") return new Response("Método no permitido", { status: 405 });
@@ -34,25 +66,10 @@ Devolvé un objeto JSON con tres campos de texto:
 Reglas: no inventes experiencia, datos ni logros que la persona no mencionó. No pongas puntajes ni digas si la contratarían. Si la respuesta no contesta la pregunta o es muy corta, decilo con amabilidad en "mejorar". Si tiene un dato técnico incorrecto, señalalo con respeto. Máximo 35 palabras por campo.`;
 
   try {
-    const r = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${MODEL}:generateContent`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json", "x-goog-api-key": key },
-      body: JSON.stringify({
-        contents: [{ role: "user", parts: [{ text: prompt }] }],
-        generationConfig: {
-          temperature: 0.4,
-          maxOutputTokens: 800,
-          responseMimeType: "application/json",
-          responseSchema: {
-            type: "OBJECT",
-            properties: { bien: { type: "STRING" }, mejorar: { type: "STRING" }, consejo: { type: "STRING" } },
-            required: ["bien", "mejorar", "consejo"]
-          },
-          thinkingConfig: { thinkingBudget: 0 }
-        }
-      })
-    });
-    if (!r.ok) return Response.json({ error: "Gemini respondió " + r.status }, { status: 502 });
+    let r = await callGemini(key, prompt, true);
+    if (r.status === 404) { const m = await pickModel(key); if (m) { MODEL = m; r = await callGemini(key, prompt, true); } }
+    if (r.status === 400) r = await callGemini(key, prompt, false);
+    if (!r.ok) return Response.json({ error: "Gemini respondió " + r.status, modelo: MODEL }, { status: 502 });
     const out = await r.json();
     const text = out?.candidates?.[0]?.content?.parts?.map(p => p.text || "").join("") || "";
     const fb = JSON.parse(text);
