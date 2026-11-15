@@ -56,10 +56,10 @@ body {
 .wrap { width: 100%; height: 100vh; height: 100dvh; min-width: 300px; min-height: 320px; }
 .phone { display: flex; flex-direction: column; width: 100%; height: 100%; overflow: hidden; background: var(--wall); }
 /* En pantallas anchas el contenido queda centrado con un ancho máximo legible, como WhatsApp Web */
-header > *, .chat > *, form > * { box-sizing: border-box; }
-header, form { padding-left: max(12px, calc((100% - 760px) / 2 + 12px), env(safe-area-inset-left, 0px)) !important; padding-right: max(12px, calc((100% - 760px) / 2 + 12px), env(safe-area-inset-right, 0px)) !important; }
+header > *, .chat > *, #form > * { box-sizing: border-box; }
+header, #form { padding-left: max(12px, calc((100% - 760px) / 2 + 12px), env(safe-area-inset-left, 0px)) !important; padding-right: max(12px, calc((100% - 760px) / 2 + 12px), env(safe-area-inset-right, 0px)) !important; }
 .chat { padding-left: max(14px, calc((100% - 760px) / 2 + 14px)) !important; padding-right: max(14px, calc((100% - 760px) / 2 + 14px)) !important; }
-form { padding-bottom: calc(max(8px, env(safe-area-inset-bottom, 0px)) + var(--badge-space, 0px)) !important; transition: padding-bottom .2s; }
+#form { padding-bottom: calc(max(8px, env(safe-area-inset-bottom, 0px)) + var(--badge-space, 0px)) !important; transition: padding-bottom .2s; }
 header { padding-top: max(10px, env(safe-area-inset-top, 0px)) !important; }
 header { display: flex; align-items: center; gap: 10px; padding: 10px 12px; background: var(--brand); color: var(--brand-ink); }
 .avatar { width: 42px; height: 42px; border-radius: 50%; flex: none; display: block; box-shadow: 0 0 0 2px rgba(255,255,255,.85); }
@@ -106,7 +106,7 @@ header { display: flex; align-items: center; gap: 10px; padding: 10px 12px; back
 .typing span { width: 7px; height: 7px; border-radius: 50%; background: var(--muted); animation: blink 1s infinite; }
 .typing span:nth-child(2) { animation-delay: .15s } .typing span:nth-child(3) { animation-delay: .3s }
 @keyframes blink { 0%,80%,100% { opacity: .25 } 40% { opacity: 1 } }
-form { display: flex; align-items: center; gap: 8px; padding: 8px 10px; background: var(--bar); }
+#form { display: flex; align-items: center; gap: 8px; padding: 8px 10px; background: var(--bar); }
 #entrada { flex: 1; min-width: 0; font: inherit; color: var(--ink); background: var(--input); border: 0; border-radius: 22px; padding: 11px 16px; outline: none; }
 .send { width: 44px; height: 44px; flex: none; border-radius: 50%; border: 0; background: var(--primary); color: #fff; display: grid; place-items: center; cursor: pointer; }
 .send svg { width: 20px; height: 20px; }
@@ -163,12 +163,103 @@ button:focus-visible, #entrada:focus-visible { outline: 2px solid var(--accent);
 .intro small { color: var(--muted); font-size: 12.5px; }
 @media (prefers-reduced-motion: reduce) { .sig img { animation: none; clip-path: none; } .pen { display: none; } .intro .fade { animation: none; opacity: 1; transform: none; } }
 @media (prefers-reduced-motion: reduce) { .typing span, .mic.rec { animation: none; opacity: .6 } }
+
+/* ---------- Encuesta de feedback ---------- */
+.fb-link { display: inline-block; margin-top: 2px; font-weight: 800; color: var(--link); text-decoration: underline; text-underline-offset: 3px; cursor: pointer; }
+.fb { position: fixed; inset: 0; z-index: 11; display: flex; align-items: center; justify-content: center; padding: 20px max(16px, env(safe-area-inset-right, 0px)) max(20px, env(safe-area-inset-bottom, 0px)) max(16px, env(safe-area-inset-left, 0px)); background: rgba(11, 31, 58, .55); overflow-y: auto; }
+.fb[hidden] { display: none; }
+.fb-card { position: relative; width: 100%; max-width: 420px; background: var(--surface); color: var(--ink); border-radius: 18px; padding: 22px 20px 20px; box-shadow: 0 18px 50px rgba(0, 0, 0, .3); display: flex; flex-direction: column; gap: 14px; margin: auto; }
+.fb-card .icon-btn { position: absolute; top: 8px; right: 8px; color: var(--muted); }
+.fb-head { display: flex; align-items: center; gap: 12px; padding-right: 32px; }
+.fb-head img { width: 48px; height: 48px; border-radius: 50%; flex: none; }
+.fb-head h2 { margin: 0; font-size: 19px; font-weight: 800; }
+.fb-head p { margin: 2px 0 0; font-size: 14px; color: var(--muted); }
+.fb fieldset { border: 0; margin: 0; padding: 0; }
+.fb legend, .fb label.lbl { font-weight: 700; font-size: 15px; margin-bottom: 8px; padding: 0; display: block; }
+.rate { display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px; }
+.rate label { position: relative; }
+.rate input { position: absolute; opacity: 0; inset: 0; margin: 0; cursor: pointer; }
+.rate span { display: grid; place-items: center; height: 48px; border-radius: 12px; border: 1.5px solid var(--line); font-weight: 800; font-size: 18px; color: var(--ink); background: var(--input); transition: background .15s, border-color .15s, color .15s; }
+.rate input:hover + span { border-color: var(--primary); }
+.rate input:checked + span { background: var(--primary); border-color: var(--primary); color: var(--primary-ink); }
+.rate input:focus-visible + span { outline: 3px solid var(--turq); outline-offset: 2px; }
+.rate-ends { display: flex; justify-content: space-between; font-size: 12.5px; color: var(--muted); margin-top: 6px; }
+.fb textarea { width: 100%; box-sizing: border-box; min-height: 96px; resize: vertical; font: inherit; font-size: 15px; color: var(--ink); background: var(--input); border: 1.5px solid var(--line); border-radius: 12px; padding: 10px 12px; }
+.fb textarea:focus { outline: none; border-color: var(--primary); }
+.fb small { display: block; margin-top: 6px; font-size: 12.5px; color: var(--muted); }
+.fb-err { margin: 0; font-size: 14px; color: #C2410C; font-weight: 700; }
+:root[data-theme="dark"] .fb-err { color: #F5A36B; }
+.fb-actions { display: flex; flex-direction: column; gap: 8px; }
+.fb-actions .enter { width: 100%; }
+.fb-actions .enter:disabled { opacity: .55; cursor: default; filter: none; }
+.ghost { font: inherit; font-size: 15px; font-weight: 800; color: var(--link); background: transparent; border: 1.5px solid var(--line); border-radius: 999px; padding: 11px 20px; cursor: pointer; width: 100%; }
+.ghost:hover { border-color: var(--primary); }
+.fb-thanks { text-align: center; display: flex; flex-direction: column; align-items: center; gap: 12px; }
+.fb-thanks img { width: 72px; height: 72px; border-radius: 50%; }
+.fb-thanks h2 { margin: 0; font-size: 20px; font-weight: 800; }
+.fb-thanks p { margin: 0; color: var(--muted); font-size: 15px; max-width: 32ch; }
+.hp { position: absolute; left: -9999px; }
+.fb-thanks[hidden] { display: none; }
+
+/* ---------- Modo admin ---------- */
+.admin-link { font: inherit; font-size: 14px; font-weight: 700; color: var(--link); background: none; border: 0; padding: 6px 10px; cursor: pointer; text-decoration: underline; text-underline-offset: 3px; }
+.intro.again .sig img { animation: none; clip-path: none; } .intro.again .pen { display: none; } .intro.again .fade { animation: none; opacity: 1; transform: none; }
+.code-box { width: 100%; max-width: 360px; display: flex; flex-direction: column; align-items: center; text-align: center; gap: 14px; }
+.code-box[hidden], .intro-box[hidden] { display: none; }
+.code-box h2 { margin: 0; font-size: 21px; font-weight: 800; color: var(--ink); }
+.code-box p { margin: 0; color: var(--muted); font-size: 15px; }
+.code-box form { width: 100%; display: flex; flex-direction: column; gap: 10px; }
+.code-in { width: 100%; box-sizing: border-box; text-align: center; font: inherit; font-size: 26px; font-weight: 800; letter-spacing: .4em; padding: 12px; color: var(--ink); background: var(--input); border: 1.5px solid var(--line); border-radius: 14px; }
+.code-in:focus { outline: none; border-color: var(--primary); }
+.intro .code-err { margin: 0; max-width: none; font-size: 14px; font-weight: 700; color: #C2410C; min-height: 1.3em; }
+:root[data-theme="dark"] .intro .code-err { color: #F5A36B; }
+.admin { position: fixed; inset: 0; z-index: 12; overflow-y: auto; background: var(--wall); color: var(--ink); }
+.admin[hidden] { display: none; }
+.adm-bar { position: sticky; top: 0; z-index: 1; display: flex; align-items: center; gap: 8px; background: var(--brand); color: var(--brand-ink); padding: 10px max(12px, calc((100% - 960px) / 2 + 12px)); padding-top: max(10px, env(safe-area-inset-top, 0px)); }
+.adm-bar h1 { flex: 1; margin: 0; font-size: 18px; font-weight: 800; }
+.adm-body { max-width: 960px; margin: 0 auto; padding: 16px 16px max(32px, env(safe-area-inset-bottom, 0px)); display: flex; flex-direction: column; gap: 16px; box-sizing: border-box; }
+.adm-note { background: var(--notice); color: var(--notice-ink); border: 1px dashed var(--line); border-radius: 12px; padding: 10px 14px; font-size: 14px; }
+.kpis { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
+.kpi, .panel { background: var(--surface); border: 1px solid var(--line); border-radius: 14px; padding: 14px 16px; }
+.kpi b { display: block; font-size: 28px; font-weight: 800; line-height: 1.1; }
+.kpi span { font-size: 13px; color: var(--muted); }
+.panels { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.panel h2 { margin: 0 0 12px; font-size: 16px; font-weight: 800; }
+.dist { display: grid; grid-template-columns: 26px 1fr 64px; align-items: center; gap: 8px 10px; font-size: 14px; }
+.dist .track { height: 12px; border-radius: 6px; background: var(--bar); overflow: hidden; }
+.dist .fill { height: 100%; border-radius: 6px; background: var(--primary); }
+.dist em { font-style: normal; color: var(--muted); text-align: right; font-variant-numeric: tabular-nums; }
+.tbl { width: 100%; border-collapse: collapse; font-size: 14px; }
+.tbl th { text-align: left; font-size: 12.5px; color: var(--muted); font-weight: 700; padding: 0 0 6px; }
+.tbl td { padding: 7px 0; border-top: 1px solid var(--line); }
+.tbl td:not(:first-child), .tbl th:not(:first-child) { text-align: right; font-variant-numeric: tabular-nums; }
+.filters { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 12px; }
+.filters button { font: inherit; font-size: 13.5px; font-weight: 700; padding: 6px 12px; border-radius: 999px; border: 1.5px solid var(--line); background: var(--input); color: var(--ink); cursor: pointer; }
+.filters button[aria-pressed="true"] { background: var(--primary); border-color: var(--primary); color: var(--primary-ink); }
+.cmts { display: flex; flex-direction: column; gap: 10px; }
+.cmt { border: 1px solid var(--line); border-radius: 12px; padding: 10px 12px; }
+.cmt-meta { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 10px; font-size: 12.5px; color: var(--muted); }
+.score { display: inline-grid; place-items: center; min-width: 26px; height: 26px; border-radius: 8px; font-weight: 800; font-size: 14px; color: var(--primary-ink); background: var(--primary); }
+.score.lo { background: #C2410C; } .score.mid { background: #64748B; }
+.cmt p { margin: 8px 0 0; font-size: 15px; white-space: pre-wrap; overflow-wrap: anywhere; }
+.cmt p.none { color: var(--muted); font-style: italic; }
+.adm-actions { display: flex; flex-wrap: wrap; gap: 8px; }
+.adm-actions .ghost { width: auto; font-size: 14px; padding: 8px 16px; }
+.empty { text-align: center; color: var(--muted); padding: 24px 8px; }
+.panel.state { display: flex; flex-direction: column; align-items: center; text-align: center; gap: 10px; padding: 36px 20px; }
+.panel.state img { width: 88px; height: 88px; border-radius: 50%; }
+.panel.state h2 { margin: 4px 0 0; font-size: 19px; }
+.panel.state p { margin: 0; color: var(--muted); font-size: 15px; max-width: 40ch; }
+.panel.state .ghost { width: auto; margin-top: 6px; padding: 9px 20px; }
+.adm-bar .icon-btn:disabled { opacity: .5; }
+[aria-busy="true"] { opacity: .6; transition: opacity .2s; }
+@media (max-width: 640px) { .kpis { grid-template-columns: 1fr 1fr; } .kpis .kpi:last-child { grid-column: span 2; } .panels { grid-template-columns: 1fr; } .kpi b { font-size: 24px; } }
 </style>
 
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;700;800&display=swap" rel="stylesheet">
 <div class="intro" id="intro" role="dialog" aria-modal="true" aria-labelledby="introTitle">
-  <div class="intro-box">
+  <div class="intro-box" id="introMain">
     <div class="sig" role="img" aria-label="Interview. Del nervio al sí.">
       <img src="data:image/png;base64,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" alt="">
       <span class="pen" aria-hidden="true"></span>
@@ -177,6 +268,73 @@ button:focus-visible, #entrada:focus-visible { outline: 2px solid var(--accent);
     <p class="fade f1">Tu entrenador de entrevistas IT. Elegí tu situación, practicá preguntas reales y recibí una devolución al instante.</p>
     <button class="enter fade f2" id="enter" type="button">Ingresar al chat</button>
     <small class="fade f3">Demo · Un proyecto de Interview para Escena Laboral, Tucumán</small>
+    <button class="admin-link fade f3" id="adminLink" type="button">Ingresar al modo admin</button>
+  </div>
+  <div class="code-box" id="codeBox" hidden>
+    <h2 id="codeTitle">Modo admin</h2>
+    <p>Ingresá el código de acceso para leer los feedbacks.</p>
+    <form id="codeForm" autocomplete="off" novalidate>
+      <label for="codeIn" hidden>Código de acceso</label>
+      <input class="code-in" id="codeIn" type="password" inputmode="numeric" pattern="[0-9]*" maxlength="8" placeholder="••••" aria-describedby="codeErr">
+      <p class="code-err" id="codeErr" role="alert"></p>
+      <button class="enter" id="codeGo" type="submit">Ingresar</button>
+      <button class="ghost" id="codeBack" type="button">Volver</button>
+    </form>
+  </div>
+</div>
+<div class="admin" id="admin" role="region" aria-label="Feedbacks de Tucu" hidden>
+  <div class="adm-bar">
+    <button class="icon-btn" id="admBack" type="button" aria-label="Volver a la intro" title="Volver a la intro">
+      <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 18l-6-6 6-6"/></svg>
+    </button>
+    <h1>Feedbacks de Tucu</h1>
+    <button class="icon-btn" id="admReload" type="button" aria-label="Actualizar" title="Actualizar">
+      <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12a9 9 0 1 1-3-6.7"/><path d="M21 4v5h-5"/></svg>
+    </button>
+  </div>
+  <div class="adm-body" id="admBody"></div>
+</div>
+<div class="fb" id="fb" role="dialog" aria-modal="true" aria-labelledby="fbTitle" hidden>
+  <div class="fb-card">
+    <button class="icon-btn" id="fbClose" type="button" aria-label="Cerrar la encuesta" title="Cerrar">
+      <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18"/></svg>
+    </button>
+    <form name="feedback" id="fbForm" method="POST" data-netlify="true" netlify-honeypot="bot-field">
+      <input type="hidden" name="form-name" value="feedback">
+      <input type="hidden" name="camino" id="fbCamino">
+      <input type="hidden" name="practicadas" id="fbPracticadas">
+      <p class="hp"><label>No completar <input name="bot-field" tabindex="-1" autocomplete="off"></label></p>
+      <div id="fbAsk" style="display:flex;flex-direction:column;gap:16px">
+        <div class="fb-head"><img class="fb-av" alt=""><div><h2 id="fbTitle">¿Qué te pareció Tucu?</h2><p>Tu opinión nos ayuda a mejorarlo. Lleva 1 minuto.</p></div></div>
+        <fieldset>
+          <legend>¿Qué tan útil te resultó practicar con Tucu?</legend>
+          <div class="rate">
+            <label><input type="radio" name="puntaje" value="1" aria-label="1 de 5, nada útil"><span>1</span></label>
+            <label><input type="radio" name="puntaje" value="2" aria-label="2 de 5"><span>2</span></label>
+            <label><input type="radio" name="puntaje" value="3" aria-label="3 de 5"><span>3</span></label>
+            <label><input type="radio" name="puntaje" value="4" aria-label="4 de 5"><span>4</span></label>
+            <label><input type="radio" name="puntaje" value="5" aria-label="5 de 5, muy útil"><span>5</span></label>
+          </div>
+          <div class="rate-ends" aria-hidden="true"><span>Nada útil</span><span>Muy útil</span></div>
+        </fieldset>
+        <div>
+          <label class="lbl" for="fbText">¿Qué te sirvió y qué mejorarías? <span style="font-weight:400;color:var(--muted)">(opcional)</span></label>
+          <textarea id="fbText" name="comentario" maxlength="1000" placeholder="Por ejemplo: la devolución me ayudó, pero me gustaría más preguntas de QA."></textarea>
+          <small>No escribas datos personales, como tu nombre completo, teléfono o DNI.</small>
+        </div>
+        <p class="fb-err" id="fbErr" role="alert" hidden></p>
+        <div class="fb-actions">
+          <button class="enter" id="fbSend" type="submit" disabled>Enviar feedback</button>
+          <button class="ghost fb-again" type="button">Volver a practicar con Tucu</button>
+        </div>
+      </div>
+      <div class="fb-thanks" id="fbThanks" hidden>
+        <img class="fb-av" alt="">
+        <h2 tabindex="-1" id="fbThanksTitle">¡Gracias por tu opinión!</h2>
+        <p>La vamos a leer para mejorar a Tucu. Cuando quieras, seguimos practicando.</p>
+        <div class="fb-actions" style="width:100%"><button class="enter fb-again" type="button">Volver a practicar con Tucu</button></div>
+      </div>
+    </form>
   </div>
 </div>
 <div class="wrap">
@@ -187,6 +345,9 @@ button:focus-visible, #entrada:focus-visible { outline: 2px solid var(--accent);
         <h1>Tucu Tech</h1>
         <p id="status">Tu entrenador de entrevistas IT</p>
       </div>
+      <button class="icon-btn" id="exit" type="button" aria-label="Salir a la intro" title="Salir a la intro">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><path d="M16 17l5-5-5-5"/><path d="M21 12H9"/></svg>
+      </button>
       <button class="icon-btn" id="restart" type="button" aria-label="Reiniciar la demo" title="Reiniciar la demo">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 12a9 9 0 1 0 3-6.7"/><path d="M3 4v5h5"/></svg>
       </button>
@@ -302,17 +463,20 @@ function rowFor(side) { const r = el("div", "row " + side + (lastSide !== side ?
 function lock(v) { busy = v; send.disabled = v; statusEl.textContent = v ? "escribiendo…" : "Tu entrenador de entrevistas IT"; }
 function disableOpts() { chat.querySelectorAll(".qr button").forEach(b => b.disabled = true); }
 
+let gen = 0; // cambia al reiniciar: corta mensajes que quedaron a medio escribir
 function bot(parts, opts, newCtx) {
   if (!Array.isArray(parts)) parts = [parts];
+  const g = gen;
   lock(true); disableOpts(); options = [];
   if (newCtx) ctx = newCtx;
   let i = 0;
   const step = () => {
+    if (g !== gen) return;
     const prev = lastSide;
     const t = rowFor("in"); t.classList.add("typing"); t.appendChild(el("div", "bubble", "<span></span><span></span><span></span>"));
     chat.appendChild(t); scroll();
     setTimeout(() => {
-      t.remove(); lastSide = prev;
+      t.remove(); if (g !== gen) return; lastSide = prev;
       const r = rowFor("in");
       const b = el("div", "bubble", parts[i] + `<span class="meta">${hhmm()}</span>`);
       r.appendChild(b);
@@ -410,10 +574,10 @@ function expAnswer(k) {
 
 /* ---------- Bienvenida, retorno y cierre ---------- */
 function perfilOpts() {
-  return [L("1", "Es mi primera entrevista", () => showLevel(1, "¡Qué bueno! Empecemos por lo primero que te van a preguntar.")),
-    L("2", "Quiero cambiar de trabajo o de sector", () => showLevel(2, "¡Buenísimo! La clave es contar bien tu recorrido.")),
-    L("3", "Quiero practicar para un puesto IT", askRole),
-    L("4", "Ver todas las preguntas", showAll)];
+  return [L("1", "Es mi primera entrevista", () => { camino = "Primera entrevista"; showLevel(1, "¡Qué bueno! Empecemos por lo primero que te van a preguntar."); }),
+    L("2", "Quiero cambiar de trabajo o de sector", () => { camino = "Cambio de trabajo o sector"; showLevel(2, "¡Buenísimo! La clave es contar bien tu recorrido."); }),
+    L("3", "Quiero practicar para un puesto IT", () => { camino = "Puesto IT"; askRole(); }),
+    L("4", "Ver todas las preguntas", () => { camino = "Todas las preguntas"; showAll(); })];
 }
 function welcome() {
   header("Hoy");
@@ -455,18 +619,11 @@ function backInSession() {
   bot(`<p>¡Hola de nuevo! Me alegra que sigas practicando. ¿Retomamos?</p>`, letters(list), { type: "return" });
 }
 function cierre() {
-  const ids = ORDER.filter(q => today.has(q));
-  const parts = [];
-  if (ids.length || practiced.length) {
-    if (ids.length) parts.push(`<p>¡Buen trabajo! Hoy repasaste ${ids.length === 1 ? "esta pregunta" : "estas " + ids.length + " preguntas"}:</p><ul>${ids.map(id => `<li>${Q[id].t}</li>`).join("")}</ul>`);
-    if (practiced.length) parts.push(`<p>${ids.length ? "Además, practicaste" : "¡Buen trabajo! Practicaste"} <strong>${practiced.length === 1 ? "1 respuesta" : practiced.length + " respuestas"}</strong> con devolución. Repetirlas en voz alta es la mejor forma de llegar con confianza.</p>`);
-    parts.push(`<p>Antes de la entrevista te sugiero dos cosas: leer los ejemplos en voz alta adaptándolos con tus datos, y preparar una pregunta para hacerle a quien te entreviste.</p>`);
-    parts.push(`<p>Tu avance queda guardado en este dispositivo: la próxima vez vas a poder retomarlo desde el inicio. ¡Mucha suerte en la entrevista!</p>`);
-  } else {
-    parts.push(`<p>Gracias por pasar. Cuando quieras prepararte, acá estoy. ¡Mucha suerte en tu búsqueda!</p>`);
-  }
-  bot(parts, letters([L("", "Empezar una nueva práctica", newSession)]), { type: "end" });
+  const n = practiced.length || today.size;
+  const hola = n ? `¡Buen trabajo! Hoy practicaste ${n === 1 ? "1 pregunta" : n + " preguntas"}. ¡Mucha suerte en la entrevista!` : "Gracias por pasar. ¡Mucha suerte en tu búsqueda!";
+  bot(`<p>${hola}</p>` + FB_ASK, letters([L("", "Empezar una nueva práctica", newSession)]), { type: "end" });
 }
+const FB_ASK = `<p>¿Me contás qué te pareció? Me ayuda a mejorar.</p><p><a href="#feedback" class="fb-link" data-fb>Abrir la encuesta (1 minuto)</a></p>`;
 function newSession() {
   today = new Set(); practiced = []; misses = 0;
   bot(`<p>¡Arrancamos de nuevo! ¿Qué te gustaría practicar ahora?</p>`, perfilOpts(), { type: "menu" });
@@ -694,14 +851,15 @@ function handle(raw) {
     if (has(/^(ejemplo|mostrame un ejemplo|un ejemplo|otro ejemplo)/)) return example(id, sim, used);
     if (has(/^(saltar|siguiente|otra pregunta|pasar)/)) return sim ? simNext(sim) : showAll();
     if (has(/^(volver|menu|volver al menu)$/)) return showMenu();
-    if (has(/^(terminar|chau|salir)$/)) return sim ? simEnd(sim) : cierre();
+    if (has(/^(terminar|chau|salir)$/)) return cierre();
     if (has(/sueldo|salari|cuanto (me )?(van a )?pag|cuanto pido/)) { misses = 0; return limitSalary(); }
     if (has(/me van a tomar|soy apto|me eligen|quedo seleccionad/)) { misses = 0; return evaluation(); }
     if (t.split(" ").length < 4) return bot(`<p>¿Esa es tu respuesta? Te conviene desarrollarla un poco más: en una entrevista, apuntá a 3 o 4 oraciones.</p>`, practiceOpts(id, sim, used), ctx);
     return feedback(id, raw, sim);
   }
   if (ctx.type === "end" || ctx.type === "simend") {
-    if (has(/^(chau|adios|gracias|listo)/)) return bot(`<p>¡Gracias a vos! Cuando quieras practicar de nuevo, escribime. ¡Mucha suerte!</p>`, letters([L("", "Empezar una nueva práctica", newSession)]), { type: "end" });
+    if (has(/^(chau|adios|gracias|listo)/)) return bot([`<p>¡Gracias a vos! Cuando quieras practicar de nuevo, escribime. ¡Mucha suerte!</p>`, FB_ASK], letters([L("", "Empezar una nueva práctica", newSession)]), { type: "end" });
+    if (has(/^(terminar|salir)$/)) return cierre();
     today = new Set(); practiced = []; misses = 0; ctx = {};
     if (has(/^(hola|buenas|buen dia|buenas tardes|buenas noches|empezar|de nuevo|otra vez|nueva practica)/)) return newSession();
   }
@@ -810,13 +968,166 @@ form.addEventListener("submit", e => {
   input.value = ""; userMsg(v); handle(v);
 });
 
+
+/* ---------- Encuesta de feedback ----------
+   Online, cada respuesta se guarda en Netlify (Forms → "feedback"). En la vista previa de Claude no se envía nada. */
+let camino = "", fbOpener = null;
+const fb = document.getElementById("fb"), fbForm = document.getElementById("fbForm"), fbSend = document.getElementById("fbSend"), fbErr = document.getElementById("fbErr");
+fb.querySelectorAll(".fb-av").forEach(i => i.src = TUCU_IMG);
+function openFb() {
+  fbForm.reset(); fbSend.disabled = true; fbSend.textContent = "Enviar feedback"; fbErr.hidden = true;
+  document.getElementById("fbAsk").style.display = "flex"; document.getElementById("fbThanks").hidden = true;
+  document.getElementById("fbCamino").value = camino || "Sin elegir";
+  document.getElementById("fbPracticadas").value = String(practiced.length);
+  fbOpener = document.activeElement; fb.hidden = false;
+  setTimeout(() => fb.querySelector(".rate input").focus({ preventScroll: true }), 50);
+}
+function closeFb() { fb.hidden = true; if (fbOpener && fbOpener.focus) fbOpener.focus({ preventScroll: true }); }
+chat.addEventListener("click", e => { const a = e.target.closest("[data-fb]"); if (a) { e.preventDefault(); openFb(); } });
+fbForm.addEventListener("change", () => { if (fbForm.querySelector("input[name=puntaje]:checked")) { fbSend.disabled = false; fbErr.hidden = true; } });
+document.getElementById("fbClose").addEventListener("click", closeFb);
+fb.addEventListener("click", e => { if (e.target === fb) closeFb(); });
+addEventListener("keydown", e => { if (e.key === "Escape" && !fb.hidden) closeFb(); });
+fb.querySelectorAll(".fb-again").forEach(b => b.addEventListener("click", () => { fb.hidden = true; if (!busy) newSession(); }));
+fbForm.addEventListener("submit", async e => {
+  e.preventDefault();
+  if (!fbForm.querySelector("input[name=puntaje]:checked")) { fbErr.textContent = "Elegí un puntaje del 1 al 5."; fbErr.hidden = false; return; }
+  fbSend.disabled = true; fbSend.textContent = "Enviando…"; fbErr.hidden = true;
+  let ok = false;
+  if (window.claude) ok = true; // vista previa: no hay dónde guardar
+  else {
+    try {
+      const r = await fetch("/", { method: "POST", headers: { "Content-Type": "application/x-www-form-urlencoded" }, body: new URLSearchParams(new FormData(fbForm)).toString(), signal: AbortSignal.timeout(10000) });
+      ok = r.ok;
+    } catch { ok = false; }
+  }
+  if (ok) {
+    document.getElementById("fbAsk").style.display = "none"; document.getElementById("fbThanks").hidden = false;
+    document.getElementById("fbThanksTitle").focus({ preventScroll: true });
+  } else {
+    fbSend.disabled = false; fbSend.textContent = "Enviar feedback";
+    fbErr.textContent = "No pudimos enviar tu opinión. Revisá la conexión y probá de nuevo."; fbErr.hidden = false;
+  }
+});
+
+/* ---------- Modo admin ----------
+   Online, /.netlify/functions/admin valida el código y trae las respuestas de Netlify Forms.
+   En la vista previa de Claude no hay servidor: se muestran datos de ejemplo. */
+const intro = document.getElementById("intro"), introMain = document.getElementById("introMain"), codeBox = document.getElementById("codeBox");
+const codeIn = document.getElementById("codeIn"), codeErr = document.getElementById("codeErr"), codeGo = document.getElementById("codeGo");
+const admin = document.getElementById("admin"), admBody = document.getElementById("admBody");
+let admCode = "", admItems = [], admFilter = 0, admState = "data", admError = "";
+function showIntro() {
+  admin.hidden = true; codeBox.hidden = true; introMain.hidden = false;
+  intro.classList.add("again"); intro.classList.remove("hide");
+  setTimeout(() => document.getElementById("enter").focus({ preventScroll: true }), 50);
+}
+document.getElementById("exit").addEventListener("click", () => { if (recording) return; gen++; lock(false); fb.hidden = true; showIntro(); });
+document.getElementById("adminLink").addEventListener("click", () => {
+  introMain.hidden = true; codeBox.hidden = false; codeIn.value = ""; codeErr.textContent = ""; codeIn.focus();
+});
+document.getElementById("codeBack").addEventListener("click", () => { codeBox.hidden = true; introMain.hidden = false; });
+codeIn.addEventListener("input", () => { codeIn.value = codeIn.value.replace(/\D/g, ""); codeErr.textContent = ""; });
+/* Pide TODOS los feedbacks a Netlify (a través de la función admin).
+   Devuelve { status: "ok", items } | { status: "denied" } | { status: "error", message } | { status: "preview" } */
+async function fetchFeedback(code) {
+  if (window.claude) return code === "2026" ? { status: "preview" } : { status: "denied" };
+  let r;
+  try {
+    r = await fetch("/.netlify/functions/admin", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ code }), cache: "no-store", signal: AbortSignal.timeout(20000) });
+  } catch { return { status: "offline" }; }
+  if (r.status === 401) return { status: "denied" };
+  const d = await r.json().catch(() => ({}));
+  if (!r.ok) return { status: "error", message: d.error || (r.status === 404 ? "El servidor del modo admin todavía no está publicado (falta admin.mjs)." : "Netlify respondió con el error " + r.status + ".") };
+  return { status: "ok", items: Array.isArray(d.items) ? d.items : [] };
+}
+function applyResult(res) {
+  admState = res.status === "ok" ? "data" : res.status; admError = res.message || "";
+  if (res.status === "ok") admItems = res.items;
+  renderAdmin();
+}
+document.getElementById("codeForm").addEventListener("submit", async e => {
+  e.preventDefault();
+  const code = codeIn.value.trim();
+  if (!/^\d+$/.test(code)) { codeErr.textContent = "Ingresá solo números."; return; }
+  codeGo.disabled = true; codeGo.textContent = "Verificando…"; codeErr.textContent = "";
+  const res = await fetchFeedback(code);
+  codeGo.disabled = false; codeGo.textContent = "Ingresar";
+  if (res.status === "denied") { codeErr.textContent = "El código no es correcto."; codeIn.select(); return; }
+  if (res.status === "offline") { codeErr.textContent = "No hay conexión con el servidor. Revisá internet y probá de nuevo."; return; }
+  admCode = code; admItems = []; admFilter = 0;
+  intro.classList.add("hide"); admin.hidden = false; admin.scrollTop = 0;
+  applyResult(res);
+});
+document.getElementById("admBack").addEventListener("click", () => { admCode = ""; admItems = []; showIntro(); });
+const reloadBtn = document.getElementById("admReload");
+async function reloadAdmin() {
+  reloadBtn.disabled = true; admBody.setAttribute("aria-busy", "true");
+  const res = await fetchFeedback(admCode);
+  reloadBtn.disabled = false; admBody.removeAttribute("aria-busy");
+  if (res.status === "offline") res.message = "No hay conexión con el servidor. Revisá internet y probá de nuevo.", res.status = "error";
+  applyResult(res);
+}
+reloadBtn.addEventListener("click", reloadAdmin);
+function stateBox(title, text, withRetry) {
+  return `<div class="panel state"><img src="${TUCU_IMG}" alt=""><h2>${title}</h2><p>${text}</p>${withRetry ? `<button class="ghost" type="button" data-retry>Actualizar</button>` : ""}</div>`;
+}
+function download(name, text, type) {
+  const a = document.createElement("a"); a.href = URL.createObjectURL(new Blob([text], { type })); a.download = name;
+  document.body.appendChild(a); a.click(); setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 500);
+}
+const fmtFecha = f => { const d = new Date(f); return isNaN(d) ? "" : d.toLocaleDateString("es-AR", { day: "2-digit", month: "2-digit" }) + " " + d.toLocaleTimeString("es-AR", { hour: "2-digit", minute: "2-digit" }); };
+const num1 = n => n.toFixed(1).replace(".", ",");
+function renderAdmin() {
+  if (admState === "preview") { admBody.innerHTML = stateBox("Abrí el sitio publicado", "La vista previa no se conecta con Netlify. Entrá al modo admin desde tucu-tech.netlify.app para ver los feedbacks reales.", false); return; }
+  if (admState === "error") { admBody.innerHTML = stateBox("No pudimos traer los feedbacks", esc(admError), true); admBody.querySelector("[data-retry]").addEventListener("click", reloadAdmin); return; }
+  const it = admItems.filter(x => x.puntaje >= 1 && x.puntaje <= 5), n = it.length;
+  if (!n) { admBody.innerHTML = stateBox("Todavía no hay feedbacks", "Cuando alguien escriba “terminar” en el chat y complete la encuesta, su opinión va a aparecer acá.", true); admBody.querySelector("[data-retry]").addEventListener("click", reloadAdmin); return; }
+  const note = "";
+  const avg = it.reduce((a, x) => a + x.puntaje, 0) / n, good = it.filter(x => x.puntaje >= 4).length;
+  const cnt = [1, 2, 3, 4, 5].map(k => it.filter(x => x.puntaje === k).length), max = Math.max(...cnt);
+  const rutas = {}; it.forEach(x => { const k = x.camino || "Sin elegir"; (rutas[k] = rutas[k] || []).push(x.puntaje); });
+  const filas = Object.entries(rutas).sort((a, b) => b[1].length - a[1].length);
+  const lista = it.filter(x => !admFilter || x.puntaje === admFilter).sort((a, b) => (b.fecha || "").localeCompare(a.fecha || ""));
+  admBody.innerHTML = note + `
+  <div class="kpis">
+    <div class="kpi"><b>${n}</b><span>${n === 1 ? "respuesta" : "respuestas"}</span></div>
+    <div class="kpi"><b>${num1(avg)} / 5</b><span>puntaje promedio</span></div>
+    <div class="kpi"><b>${Math.round(good / n * 100)}%</b><span>puntuó 4 o 5</span></div>
+  </div>
+  <div class="panels">
+    <section class="panel" aria-labelledby="hDist"><h2 id="hDist">Distribución del puntaje</h2>
+      <div class="dist">${[5, 4, 3, 2, 1].map(k => `<span>${k}</span><div class="track" role="img" aria-label="${cnt[k - 1]} respuestas con ${k}"><div class="fill" style="width:${max ? cnt[k - 1] / max * 100 : 0}%"></div></div><em>${cnt[k - 1]} · ${Math.round(cnt[k - 1] / n * 100)}%</em>`).join("")}</div>
+    </section>
+    <section class="panel" aria-labelledby="hCam"><h2 id="hCam">Por camino</h2>
+      <table class="tbl"><thead><tr><th>Camino</th><th>Respuestas</th><th>Promedio</th></tr></thead><tbody>
+      ${filas.map(([k, v]) => `<tr><td>${esc(k)}</td><td>${v.length}</td><td>${num1(v.reduce((a, b) => a + b, 0) / v.length)}</td></tr>`).join("")}
+      </tbody></table>
+    </section>
+  </div>
+  <section class="panel" aria-labelledby="hCmt"><h2 id="hCmt">Comentarios</h2>
+    <div class="filters" role="group" aria-label="Filtrar por puntaje">
+      ${[0, 5, 4, 3, 2, 1].map(k => `<button type="button" data-f="${k}" aria-pressed="${admFilter === k}">${k ? "Puntaje " + k : "Todos"}</button>`).join("")}
+    </div>
+    <div class="cmts">${lista.length ? lista.map(x => `<article class="cmt"><div class="cmt-meta"><span class="score ${x.puntaje <= 2 ? "lo" : x.puntaje === 3 ? "mid" : ""}" aria-label="Puntaje ${x.puntaje}">${x.puntaje}</span><span>${esc(x.camino || "Sin elegir")}</span><span>${x.practicadas} practicadas</span><span>${fmtFecha(x.fecha)}</span></div>${x.comentario ? `<p>${esc(x.comentario)}</p>` : `<p class="none">Sin comentario</p>`}</article>`).join("") : `<p class="empty">No hay feedbacks con ese puntaje.</p>`}</div>
+  </section>
+  <div class="adm-actions"><button class="ghost" type="button" id="dlJson">Descargar JSON</button><button class="ghost" type="button" id="dlCsv">Descargar CSV</button></div>`;
+  admBody.querySelectorAll("[data-f]").forEach(b => b.addEventListener("click", () => { admFilter = +b.dataset.f; renderAdmin(); admBody.querySelector(`[data-f="${admFilter}"]`).focus(); }));
+  document.getElementById("dlJson").addEventListener("click", () => download("tucu-feedback.json", JSON.stringify(it, null, 2), "application/json"));
+  document.getElementById("dlCsv").addEventListener("click", () => {
+    const q = v => `"${String(v ?? "").replace(/"/g, '""')}"`;
+    download("tucu-feedback.csv", "﻿fecha,puntaje,camino,practicadas,comentario\n" + it.map(x => [x.fecha, x.puntaje, x.camino, x.practicadas, x.comentario].map(q).join(",")).join("\n"), "text/csv");
+  });
+}
+
 /* ---------- Inicio y controles de la guía ---------- */
 document.getElementById("restart").addEventListener("click", () => {
   if (busy || recording) return;
   seen = new Set(); mem = { seen: [], lastQ: null, lastVisit: null }; save(mem); start();
 });
 function start() {
-  chat.innerHTML = ""; today = new Set(); ctx = {}; misses = 0; lastSide = null; practiced = [];
+  gen++; lock(false);
+  chat.innerHTML = ""; today = new Set(); ctx = {}; misses = 0; lastSide = null; practiced = []; camino = "";
   welcome();
   persist();
 }
@@ -849,7 +1160,7 @@ addEventListener("resize", avoidBadge);
 
 /* La conversación arranca recién cuando la persona entra al chat */
 document.getElementById("enter").addEventListener("click", () => {
-  document.getElementById("intro").classList.add("hide");
+  document.getElementById("intro").classList.add("hide"); fb.hidden = true;
   start();
   if (matchMedia("(pointer: fine)").matches) setTimeout(() => input.focus({ preventScroll: true }), 500); // en celulares no abre el teclado solo
 });
