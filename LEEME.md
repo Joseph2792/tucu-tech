@@ -68,6 +68,7 @@ Guía paso a paso para dejar a Tucu Tech online, con un link público que cualqu
 ## Encuesta de feedback y modo admin
 
 - **Encuesta:** cuando alguien escribe "terminar", Tucu se despide y deja un link a la encuesta (puntaje del 1 al 5 y comentario). Las respuestas se guardan en **Netlify Forms → feedback**. Para que funcione, activá una vez **Forms → Enable form detection** y volvé a publicar.
+- **Criterios (opcional):** después de la encuesta, Tucu invita a responder 6 preguntas de sí, no o «No lo usé» sobre los criterios del bench (transparencia, respuestas breves, paso siguiente, comprensión de texto y audio, utilidad de la devolución y tono). Se guardan en **Netlify Forms → criterios** y el modo admin las muestra como gráfico de barras.
 - **Modo admin:** en la intro, **Ingresar al modo admin** pide el código de acceso y muestra las respuestas, el promedio, el puntaje por camino y los comentarios. También permite descargar JSON o CSV.
 - **Para que el modo admin lea las respuestas,** cargá en **Environment variables** la variable `NETLIFY_API_TOKEN`, con un token personal de Netlify (**User settings → Applications → Personal access tokens → New access token**). Marcá *Contains secret values*. El token da acceso a tu cuenta de Netlify: no lo compartas y ponele vencimiento. Opcional: `ADMIN_CODE` cambia el código de acceso (por defecto, 2026).
 

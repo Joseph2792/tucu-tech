@@ -201,6 +201,24 @@ button:focus-visible, #entrada:focus-visible { outline: 2px solid var(--accent);
 .fb-thanks h2 { margin: 0; font-size: 20px; font-weight: 800; }
 .fb-thanks p { margin: 0; color: var(--muted); font-size: 15px; max-width: 32ch; }
 .hp { position: absolute; left: -9999px; }
+.crit { display: flex; flex-direction: column; gap: 12px; }
+.crit fieldset { border-top: 1px solid var(--line); padding-top: 10px; }
+.crit fieldset:first-of-type { border-top: 0; padding-top: 0; }
+.crit legend { float: left; width: 100%; padding: 0; font-size: 14.5px; margin-bottom: 6px; font-weight: 700; }
+.crit .seg { clear: both; }
+.seg { display: grid; grid-template-columns: 1fr 1fr 1.3fr; gap: 6px; }
+.seg label { position: relative; }
+.seg input { position: absolute; opacity: 0; inset: 0; margin: 0; cursor: pointer; }
+.seg span { display: grid; place-items: center; height: 38px; border-radius: 10px; border: 1.5px solid var(--line); font-weight: 700; font-size: 14px; color: var(--ink); background: var(--input); }
+.seg input:checked + span { background: var(--primary); border-color: var(--primary); color: var(--primary-ink); }
+.seg input:focus-visible + span { outline: 3px solid var(--turq); outline-offset: 2px; }
+.crit-bars { display: grid; grid-template-columns: minmax(120px, 1.3fr) 2fr auto; align-items: center; gap: 10px 12px; font-size: 14px; }
+.crit-bars .track { height: 14px; border-radius: 7px; background: var(--bar); overflow: hidden; }
+.crit-bars .fill { height: 100%; border-radius: 7px; background: var(--primary); }
+.crit-bars .fill.low { background: #C2410C; }
+.crit-bars em { font-style: normal; color: var(--muted); font-variant-numeric: tabular-nums; white-space: nowrap; }
+.crit-bars b { font-variant-numeric: tabular-nums; }
+@media (max-width: 640px) { .crit-bars { grid-template-columns: 1fr auto; gap: 4px 10px; } .crit-bars > span { grid-column: 1 / -1; margin-top: 6px; } }
 .fb-thanks[hidden] { display: none; }
 
 /* ---------- Modo admin ---------- */
@@ -333,10 +351,32 @@ button:focus-visible, #entrada:focus-visible { outline: 2px solid var(--accent);
       <div class="fb-thanks" id="fbThanks" hidden>
         <img class="fb-av" alt="">
         <h2 tabindex="-1" id="fbThanksTitle">¡Gracias por tu opinión!</h2>
-        <p>La vamos a leer para mejorar a Tucu. Cuando quieras, seguimos practicando.</p>
-        <div class="fb-actions" style="width:100%"><button class="enter fb-again" type="button">Volver a practicar con Tucu</button></div>
+        <p>¿Nos ayudás con <strong>6 preguntas rápidas</strong> de sí o no? Así vemos si Tucu cumple lo que nos propusimos.</p>
+        <div class="fb-actions" style="width:100%"><button class="enter" id="critOpen" type="button">Responder 6 preguntas</button><button class="ghost fb-again" type="button">Volver a practicar con Tucu</button></div>
       </div>
     </form>
+    <form name="criterios" id="critForm" method="POST" data-netlify="true" netlify-honeypot="bot-field" hidden>
+      <input type="hidden" name="form-name" value="criterios">
+      <input type="hidden" name="camino" id="critCamino">
+      <p class="hp"><label>No completar <input name="bot-field" tabindex="-1" autocomplete="off"></label></p>
+      <div class="crit">
+        <div class="fb-head"><img class="fb-av" alt=""><div><h2 id="critTitle" tabindex="-1">6 preguntas rápidas</h2><p>Si alguna no aplica, elegí «No lo usé».</p></div></div>
+        <fieldset><legend>¿Te quedó claro desde el inicio que Tucu es una IA y qué podía hacer?</legend><div class="seg"><label><input type="radio" name="ia" value="si"><span>Sí</span></label><label><input type="radio" name="ia" value="no"><span>No</span></label><label><input type="radio" name="ia" value="no_uso"><span>No lo usé</span></label></div></fieldset>
+        <fieldset><legend>¿Las respuestas fueron cortas y fáciles de leer?</legend><div class="seg"><label><input type="radio" name="breves" value="si"><span>Sí</span></label><label><input type="radio" name="breves" value="no"><span>No</span></label><label><input type="radio" name="breves" value="no_uso"><span>No lo usé</span></label></div></fieldset>
+        <fieldset><legend>¿Siempre supiste qué podías hacer después?</legend><div class="seg"><label><input type="radio" name="siguiente" value="si"><span>Sí</span></label><label><input type="radio" name="siguiente" value="no"><span>No</span></label><label><input type="radio" name="siguiente" value="no_uso"><span>No lo usé</span></label></div></fieldset>
+        <fieldset><legend>¿Te entendió cuando escribiste con tus palabras o mandaste un audio?</legend><div class="seg"><label><input type="radio" name="entendio" value="si"><span>Sí</span></label><label><input type="radio" name="entendio" value="no"><span>No</span></label><label><input type="radio" name="entendio" value="no_uso"><span>No lo usé</span></label></div></fieldset>
+        <fieldset><legend>¿La devolución te sirvió para mejorar tu respuesta?</legend><div class="seg"><label><input type="radio" name="devolucion" value="si"><span>Sí</span></label><label><input type="radio" name="devolucion" value="no"><span>No</span></label><label><input type="radio" name="devolucion" value="no_uso"><span>No lo usé</span></label></div></fieldset>
+        <fieldset><legend>¿El tono te pareció cercano y respetuoso?</legend><div class="seg"><label><input type="radio" name="tono" value="si"><span>Sí</span></label><label><input type="radio" name="tono" value="no"><span>No</span></label><label><input type="radio" name="tono" value="no_uso"><span>No lo usé</span></label></div></fieldset>
+        <p class="fb-err" id="critErr" role="alert" hidden></p>
+        <div class="fb-actions"><button class="enter" id="critSend" type="submit" disabled>Enviar respuestas</button><button class="ghost fb-again" type="button">Saltear y volver a practicar</button></div>
+      </div>
+    </form>
+    <div class="fb-thanks" id="critDone" hidden>
+      <img class="fb-av" alt="">
+      <h2 tabindex="-1" id="critDoneTitle">¡Listo, gracias!</h2>
+      <p>Tus respuestas nos ayudan a saber qué cumple Tucu y qué mejorar.</p>
+      <div class="fb-actions" style="width:100%"><button class="enter fb-again" type="button">Volver a practicar con Tucu</button></div>
+    </div>
   </div>
 </div>
 <div class="wrap">
@@ -1007,6 +1047,7 @@ fb.querySelectorAll(".fb-av").forEach(i => i.src = TUCU_IMG);
 function openFb() {
   fbForm.reset(); fbSend.disabled = true; fbSend.textContent = "Enviar feedback"; fbErr.hidden = true;
   document.getElementById("fbAsk").style.display = "flex"; document.getElementById("fbThanks").hidden = true;
+  fbForm.hidden = false; critForm.hidden = true; critForm.reset(); critSend.disabled = true; critSend.textContent = "Enviar respuestas"; critErr.hidden = true; document.getElementById("critDone").hidden = true;
   document.getElementById("fbCamino").value = camino || "Sin elegir";
   document.getElementById("fbPracticadas").value = String(practiced.length);
   fbOpener = document.activeElement; fb.hidden = false;
@@ -1019,6 +1060,38 @@ document.getElementById("fbClose").addEventListener("click", closeFb);
 fb.addEventListener("click", e => { if (e.target === fb) closeFb(); });
 addEventListener("keydown", e => { if (e.key === "Escape" && !fb.hidden) closeFb(); });
 fb.querySelectorAll(".fb-again").forEach(b => b.addEventListener("click", () => { fb.hidden = true; if (!busy) newSession(); }));
+/* Segunda parte (opcional): 6 criterios del bench con Sí / No / No lo usé. Se guarda en el formulario "criterios". */
+const critForm = document.getElementById("critForm"), critSend = document.getElementById("critSend"), critErr = document.getElementById("critErr");
+const CRIT_N = 6;
+async function enviarForm(form) {
+  if (window.claude) return true; // vista previa: no hay dónde guardar
+  try {
+    const r = await fetch("/", { method: "POST", headers: { "Content-Type": "application/x-www-form-urlencoded" }, body: new URLSearchParams(new FormData(form)).toString(), signal: AbortSignal.timeout(10000) });
+    return r.ok;
+  } catch { return false; }
+}
+document.getElementById("critOpen").addEventListener("click", () => {
+  fbForm.hidden = true; critForm.hidden = false;
+  document.getElementById("critCamino").value = camino || "Sin elegir";
+  fb.querySelector(".fb-card").scrollTop = 0; fb.scrollTop = 0;
+  document.getElementById("critTitle").focus({ preventScroll: true });
+});
+critForm.addEventListener("change", () => {
+  const n = critForm.querySelectorAll("input[type=radio]:checked").length;
+  critSend.disabled = n < CRIT_N; if (n === CRIT_N) critErr.hidden = true;
+});
+critForm.addEventListener("submit", async e => {
+  e.preventDefault();
+  if (critForm.querySelectorAll("input[type=radio]:checked").length < CRIT_N) { critErr.textContent = "Respondé las 6 preguntas. Si alguna no aplica, elegí «No lo usé»."; critErr.hidden = false; return; }
+  critSend.disabled = true; critSend.textContent = "Enviando…"; critErr.hidden = true;
+  if (await enviarForm(critForm)) {
+    critForm.hidden = true; document.getElementById("critDone").hidden = false;
+    document.getElementById("critDoneTitle").focus({ preventScroll: true });
+  } else {
+    critSend.disabled = false; critSend.textContent = "Enviar respuestas";
+    critErr.textContent = "No pudimos enviar tus respuestas. Revisá la conexión y probá de nuevo."; critErr.hidden = false;
+  }
+});
 fbForm.addEventListener("submit", async e => {
   e.preventDefault();
   if (!fbForm.querySelector("input[name=puntaje]:checked")) { fbErr.textContent = "Elegí un puntaje del 1 al 5."; fbErr.hidden = false; return; }
@@ -1046,7 +1119,7 @@ fbForm.addEventListener("submit", async e => {
 const intro = document.getElementById("intro"), introMain = document.getElementById("introMain"), codeBox = document.getElementById("codeBox");
 const codeIn = document.getElementById("codeIn"), codeErr = document.getElementById("codeErr"), codeGo = document.getElementById("codeGo");
 const admin = document.getElementById("admin"), admBody = document.getElementById("admBody");
-let admCode = "", admItems = [], admFilter = 0, admState = "data", admError = "";
+let admCode = "", admItems = [], admCrit = [], admFilter = 0, admState = "data", admError = "";
 function showIntro() {
   admin.hidden = true; codeBox.hidden = true; introMain.hidden = false;
   intro.classList.add("again"); intro.classList.remove("hide");
@@ -1069,11 +1142,11 @@ async function fetchFeedback(code) {
   if (r.status === 401) return { status: "denied" };
   const d = await r.json().catch(() => ({}));
   if (!r.ok) return { status: "error", message: d.error || (r.status === 404 ? "El servidor del modo admin todavía no está publicado (falta admin.mjs)." : "Netlify respondió con el error " + r.status + ".") };
-  return { status: "ok", items: Array.isArray(d.items) ? d.items : [] };
+  return { status: "ok", items: Array.isArray(d.items) ? d.items : [], criterios: Array.isArray(d.criterios) ? d.criterios : [] };
 }
 function applyResult(res) {
   admState = res.status === "ok" ? "data" : res.status; admError = res.message || "";
-  if (res.status === "ok") admItems = res.items;
+  if (res.status === "ok") { admItems = res.items; admCrit = res.criterios || []; }
   renderAdmin();
 }
 document.getElementById("codeForm").addEventListener("submit", async e => {
@@ -1108,6 +1181,27 @@ function download(name, text, type) {
 }
 const fmtFecha = f => { const d = new Date(f); return isNaN(d) ? "" : d.toLocaleDateString("es-AR", { day: "2-digit", month: "2-digit" }) + " " + d.toLocaleTimeString("es-AR", { hour: "2-digit", minute: "2-digit" }); };
 const num1 = n => n.toFixed(1).replace(".", ",");
+/* Criterios del bench que evalúa el usuario (ver guía "Chatbots: cómo deben funcionar") */
+const CRITERIOS = [
+  { k: "ia", l: "Transparencia: queda claro que es IA y qué hace" },
+  { k: "breves", l: "Respuestas cortas y fáciles de leer" },
+  { k: "siguiente", l: "Siempre hay un paso siguiente" },
+  { k: "entendio", l: "Entiende texto libre y audio" },
+  { k: "devolucion", l: "La devolución sirve para mejorar" },
+  { k: "tono", l: "Tono cercano y respetuoso" }
+];
+function critPanel() {
+  const n = admCrit.length;
+  if (!n) return `<section class="panel" aria-labelledby="hCrit"><h2 id="hCrit">Cumplimiento de criterios</h2><p class="empty" style="padding:8px 0">Todavía nadie respondió las 6 preguntas de sí o no. Aparecen después de la encuesta, como paso opcional.</p></section>`;
+  const filas = CRITERIOS.map(c => {
+    const si = admCrit.filter(x => x[c.k] === "si").length, no = admCrit.filter(x => x[c.k] === "no").length, base = si + no;
+    return { ...c, si, base, pct: base ? Math.round(si / base * 100) : null };
+  }).sort((a, b) => (b.pct ?? -1) - (a.pct ?? -1));
+  return `<section class="panel" aria-labelledby="hCrit"><h2 id="hCrit">Cumplimiento de criterios</h2>
+    <p class="muted-tip" style="margin:-6px 0 12px;font-size:13px">Porcentaje de «Sí» entre quienes lo usaron · ${n} ${n === 1 ? "respuesta" : "respuestas"}. «No lo usé» no cuenta. En naranja, los criterios por debajo del 60%.</p>
+    <div class="crit-bars">${filas.map(f => `<span>${f.l}</span><div class="track" role="img" aria-label="${f.pct === null ? "Sin datos" : f.pct + "% respondió sí"}"><div class="fill${f.pct !== null && f.pct < 60 ? " low" : ""}" style="width:${f.pct ?? 0}%"></div></div><em>${f.pct === null ? "sin datos" : `<b>${f.pct}%</b> · ${f.si} de ${f.base}`}</em>`).join("")}</div>
+  </section>`;
+}
 function renderAdmin() {
   if (admState === "preview") { admBody.innerHTML = stateBox("Abrí el sitio publicado", "La vista previa no se conecta con Netlify. Entrá al modo admin desde tucu-tech.netlify.app para ver los feedbacks reales.", false); return; }
   if (admState === "error") { admBody.innerHTML = stateBox("No pudimos traer los feedbacks", esc(admError), true); admBody.querySelector("[data-retry]").addEventListener("click", reloadAdmin); return; }
@@ -1135,15 +1229,20 @@ function renderAdmin() {
       </tbody></table>
     </section>
   </div>
+  ${critPanel()}
   <section class="panel" aria-labelledby="hCmt"><h2 id="hCmt">Comentarios</h2>
     <div class="filters" role="group" aria-label="Filtrar por puntaje">
       ${[0, 5, 4, 3, 2, 1].map(k => `<button type="button" data-f="${k}" aria-pressed="${admFilter === k}">${k ? "Puntaje " + k : "Todos"}</button>`).join("")}
     </div>
     <div class="cmts">${lista.length ? lista.map(x => `<article class="cmt"><div class="cmt-meta"><span class="score ${x.puntaje <= 2 ? "lo" : x.puntaje === 3 ? "mid" : ""}" aria-label="Puntaje ${x.puntaje}">${x.puntaje}</span><span>${esc(x.camino || "Sin elegir")}</span><span>${x.practicadas} practicadas</span><span>${fmtFecha(x.fecha)}</span></div>${x.comentario ? `<p>${esc(x.comentario)}</p>` : `<p class="none">Sin comentario</p>`}</article>`).join("") : `<p class="empty">No hay feedbacks con ese puntaje.</p>`}</div>
   </section>
-  <div class="adm-actions"><button class="ghost" type="button" id="dlJson">Descargar JSON</button><button class="ghost" type="button" id="dlCsv">Descargar CSV</button></div>`;
+  <div class="adm-actions"><button class="ghost" type="button" id="dlJson">Descargar JSON</button><button class="ghost" type="button" id="dlCsv">Descargar CSV</button>${admCrit.length ? `<button class="ghost" type="button" id="dlCrit">Descargar criterios (CSV)</button>` : ""}</div>`;
   admBody.querySelectorAll("[data-f]").forEach(b => b.addEventListener("click", () => { admFilter = +b.dataset.f; renderAdmin(); admBody.querySelector(`[data-f="${admFilter}"]`).focus(); }));
-  document.getElementById("dlJson").addEventListener("click", () => download("tucu-feedback.json", JSON.stringify(it, null, 2), "application/json"));
+  document.getElementById("dlJson").addEventListener("click", () => download("tucu-feedback.json", JSON.stringify({ feedback: it, criterios: admCrit }, null, 2), "application/json"));
+  document.getElementById("dlCrit")?.addEventListener("click", () => {
+    const q = v => `"${String(v ?? "").replace(/"/g, '""')}"`, k = CRITERIOS.map(c => c.k);
+    download("tucu-criterios.csv", "\ufefffecha,camino," + k.join(",") + "\n" + admCrit.map(x => [x.fecha, x.camino, ...k.map(c => x[c])].map(q).join(",")).join("\n"), "text/csv");
+  });
   document.getElementById("dlCsv").addEventListener("click", () => {
     const q = v => `"${String(v ?? "").replace(/"/g, '""')}"`;
     download("tucu-feedback.csv", "﻿fecha,puntaje,camino,practicadas,comentario\n" + it.map(x => [x.fecha, x.puntaje, x.camino, x.practicadas, x.comentario].map(q).join(",")).join("\n"), "text/csv");

@@ -1,6 +1,6 @@
 // Modo admin de Tucu Tech.
 // Recibe el código de acceso, lo valida acá (en el servidor, nunca en la página) y, si es correcto,
-// pide a Netlify las respuestas del formulario "feedback" y las devuelve en JSON.
+// pide a Netlify las respuestas de los formularios "feedback" y "criterios" y las devuelve en JSON.
 // Variables en Netlify: NETLIFY_API_TOKEN (obligatoria, token personal de Netlify) y
 // ADMIN_CODE (opcional, el código de acceso; si no está, usa 2026).
 const API = "https://api.netlify.com/api/v1";
@@ -22,24 +22,37 @@ export default async (req, context) => {
   try {
     const fr = await fetch(`${API}/sites/${siteId}/forms`, { headers, signal: AbortSignal.timeout(8000) });
     if (!fr.ok) return Response.json({ error: "Netlify respondió " + fr.status + " al pedir los formularios." }, { status: 502 });
-    const form = (await fr.json()).find(f => f.name === "feedback");
-    if (!form) return Response.json({ items: [] }, { headers: { "Cache-Control": "no-store" } });
-    const subs = [];
-    for (let page = 1; page <= 50; page++) { // hasta 5000 respuestas
-      const r = await fetch(`${API}/forms/${form.id}/submissions?per_page=100&page=${page}`, { headers, signal: AbortSignal.timeout(8000) });
-      if (!r.ok) return Response.json({ error: "Netlify respondió " + r.status + " al pedir las respuestas." }, { status: 502 });
-      const arr = await r.json(); subs.push(...arr);
-      if (arr.length < 100) break;
-    }
-    const items = subs.map(s => ({
+    const forms = await fr.json();
+    // Trae todas las respuestas de un formulario (de a 100, hasta 5000)
+    const todas = async nombre => {
+      const form = forms.find(f => f.name === nombre);
+      if (!form) return [];
+      const subs = [];
+      for (let page = 1; page <= 50; page++) {
+        const r = await fetch(`${API}/forms/${form.id}/submissions?per_page=100&page=${page}`, { headers, signal: AbortSignal.timeout(8000) });
+        if (!r.ok) throw new Error("Netlify respondió " + r.status + " al pedir las respuestas.");
+        const arr = await r.json(); subs.push(...arr);
+        if (arr.length < 100) break;
+      }
+      return subs;
+    };
+    const [fb, cr] = await Promise.all([todas("feedback"), todas("criterios")]);
+    const items = fb.map(s => ({
       fecha: s.created_at,
       puntaje: Number(s.data?.puntaje) || 0,
       camino: s.data?.camino || "",
       practicadas: Number(s.data?.practicadas) || 0,
       comentario: String(s.data?.comentario || "").slice(0, 1000)
     }));
-    return Response.json({ items }, { headers: { "Cache-Control": "no-store" } });
+    // Encuesta de criterios: cada campo vale "si", "no" o "no_uso"
+    const CLAVES = ["ia", "breves", "siguiente", "entendio", "devolucion", "tono"];
+    const criterios = cr.map(s => {
+      const o = { fecha: s.created_at, camino: s.data?.camino || "" };
+      for (const k of CLAVES) { const v = String(s.data?.[k] || ""); o[k] = ["si", "no", "no_uso"].includes(v) ? v : ""; }
+      return o;
+    });
+    return Response.json({ items, criterios }, { headers: { "Cache-Control": "no-store" } });
   } catch (e) {
-    return Response.json({ error: "No se pudo conectar con Netlify." }, { status: 502 });
+    return Response.json({ error: e.message?.startsWith("Netlify") ? e.message : "No se pudo conectar con Netlify." }, { status: 502 });
   }
 };
