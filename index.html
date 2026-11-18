@@ -170,7 +170,7 @@ button:focus-visible, #entrada:focus-visible { outline: 2px solid var(--accent);
 .fb-link { display: inline-block; margin-top: 2px; font-weight: 800; color: var(--link); text-decoration: underline; text-underline-offset: 3px; cursor: pointer; }
 .fb { position: fixed; inset: 0; z-index: 11; display: flex; align-items: center; justify-content: center; padding: 20px max(16px, env(safe-area-inset-right, 0px)) max(20px, env(safe-area-inset-bottom, 0px)) max(16px, env(safe-area-inset-left, 0px)); background: rgba(11, 31, 58, .55); overflow-y: auto; }
 .fb[hidden] { display: none; }
-.fb-card { position: relative; width: 100%; max-width: 420px; background: var(--surface); color: var(--ink); border-radius: 18px; padding: 22px 20px 20px; box-shadow: 0 18px 50px rgba(0, 0, 0, .3); display: flex; flex-direction: column; gap: 14px; margin: auto; }
+.fb-card { position: relative; width: 100%; max-width: 420px; background: var(--surface); color: var(--ink); border-radius: 18px; padding: 26px 22px 22px; box-shadow: 0 18px 50px rgba(0, 0, 0, .3); display: flex; flex-direction: column; gap: 14px; margin: auto; }
 .fb-card .icon-btn { position: absolute; top: 8px; right: 8px; color: var(--muted); }
 .fb-head { display: flex; align-items: center; gap: 12px; padding-right: 32px; }
 .fb-head img { width: 48px; height: 48px; border-radius: 50%; flex: none; }
@@ -201,12 +201,12 @@ button:focus-visible, #entrada:focus-visible { outline: 2px solid var(--accent);
 .fb-thanks h2 { margin: 0; font-size: 20px; font-weight: 800; }
 .fb-thanks p { margin: 0; color: var(--muted); font-size: 15px; max-width: 32ch; }
 .hp { position: absolute; left: -9999px; }
-.crit { display: flex; flex-direction: column; gap: 10px; border-top: 1px solid var(--line); padding-top: 14px; }
-.crit-head { margin: 0; font-size: 15px; } .crit-head span { color: var(--muted); font-size: 13px; font-weight: 400; }
-.crit fieldset { border-top: 1px solid var(--line); padding-top: 10px; }
+.crit { display: flex; flex-direction: column; gap: 22px; border-top: 1px solid var(--line); padding-top: 22px; }
+.crit-head { margin: 0 0 -4px; font-size: 15px; line-height: 1.45; } .crit-head span { display: block; color: var(--muted); font-size: 13px; font-weight: 400; margin-top: 2px; }
+.crit fieldset { border-top: 1px solid var(--line); padding-top: 20px; }
 .crit fieldset:first-of-type { border-top: 0; padding-top: 0; }
 .crit legend { font-weight: 600 !important; }
-.crit legend { float: left; width: 100%; padding: 0; font-size: 14.5px; margin-bottom: 6px; font-weight: 700; }
+.crit legend { float: left; width: 100%; padding: 0; font-size: 14.5px; line-height: 1.45; margin-bottom: 12px; font-weight: 700; }
 .crit .seg { clear: both; }
 .seg { display: grid; grid-template-columns: 1fr 1fr 1.3fr; gap: 6px; }
 .seg label { position: relative; }
@@ -326,7 +326,7 @@ button:focus-visible, #entrada:focus-visible { outline: 2px solid var(--accent);
       <input type="hidden" name="camino" id="fbCamino">
       <input type="hidden" name="practicadas" id="fbPracticadas">
       <p class="hp"><label>No completar <input name="bot-field" tabindex="-1" autocomplete="off"></label></p>
-      <div id="fbAsk" style="display:flex;flex-direction:column;gap:16px">
+      <div id="fbAsk" style="display:flex;flex-direction:column;gap:24px">
         <div class="fb-head"><img class="fb-av" alt=""><div><h2 id="fbTitle">¿Qué te pareció Tucu?</h2><p>Tu opinión nos ayuda a mejorarlo. Lleva 1 minuto.</p></div></div>
         <fieldset>
           <legend>¿Qué tan útil te resultó practicar con Tucu?</legend>
@@ -340,7 +340,7 @@ button:focus-visible, #entrada:focus-visible { outline: 2px solid var(--accent);
           <div class="rate-ends" aria-hidden="true"><span>Nada útil</span><span>Muy útil</span></div>
         </fieldset>
         <div class="crit">
-          <p class="crit-head"><strong>Contanos un poco más</strong> <span>(opcional · si algo no aplica, elegí «No lo usé»)</span></p>
+          <p class="crit-head"><strong>Contanos un poco más</strong> <span>Opcional. Si algo no aplica, elegí «No lo usé».</span></p>
           <fieldset><legend>¿Te quedó claro desde el inicio que Tucu es una IA y qué podía hacer?</legend><div class="seg"><label><input type="radio" name="ia" value="si"><span>Sí</span></label><label><input type="radio" name="ia" value="no"><span>No</span></label><label><input type="radio" name="ia" value="no_uso"><span>No lo usé</span></label></div></fieldset>
           <fieldset><legend>¿Las respuestas fueron cortas y fáciles de leer?</legend><div class="seg"><label><input type="radio" name="breves" value="si"><span>Sí</span></label><label><input type="radio" name="breves" value="no"><span>No</span></label><label><input type="radio" name="breves" value="no_uso"><span>No lo usé</span></label></div></fieldset>
           <fieldset><legend>¿Siempre supiste qué podías hacer después?</legend><div class="seg"><label><input type="radio" name="siguiente" value="si"><span>Sí</span></label><label><input type="radio" name="siguiente" value="no"><span>No</span></label><label><input type="radio" name="siguiente" value="no_uso"><span>No lo usé</span></label></div></fieldset>
