@@ -672,10 +672,10 @@ function practiceOpts(id, sim, used) {
   if (!used.includes("dk")) list.push(L("", "No sé qué responder", () => dontKnow(id, sim, used)));
   if (sim) {
     list.push(L("", "Saltar esta pregunta", () => simNext(sim)));
-    if (used.length >= 2) list.push(L("", "Terminar la simulación", () => simEnd(sim)));
+    list.push(L("", "Terminar la simulación", () => simEnd(sim)));
   } else {
     list.push(L("", "Elegir otra pregunta", () => showMenu("¿Qué te gustaría practicar ahora?")));
-    if (used.length >= 2) list.push(L("", "Volver al menú", () => showMenu()));
+    list.push(L("", "Terminar", cierre));
   }
   return letters(list);
 }
@@ -809,7 +809,7 @@ function startSim(rol, sen) {
   const own = Object.keys(RQ).filter(id => RQ[id].rol === rol && RQ[id].sen === sen);
   const sim = { rol, sen, ids: ["1.1", ...own, "3.3"], i: 0, done: [] }; lastSim = sim;
   bot(`<p>Arrancamos: <strong>${rol} · ${sen}</strong>. Respondé como en la entrevista, escribiendo o con un audio. Después de cada respuesta te doy una devolución, y si te trabás podés pedir una pista.</p>`,
-    letters([L("", "Comenzar simulación", () => practiceIntro(sim.ids[0], sim)), L("", "Elegir otro puesto", askRole)]), { type: "simstart" });
+    letters([L("", "Comenzar simulación", () => practiceIntro(sim.ids[0], sim)), L("", "Elegir otro puesto", askRole), L("", "Terminar", cierre)]), { type: "simstart" });
 }
 function simNext(sim) {
   sim.i++;
