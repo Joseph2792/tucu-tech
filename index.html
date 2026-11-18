@@ -77,6 +77,8 @@ header { display: flex; align-items: center; gap: 10px; padding: 10px 12px; back
 .hello { display: flex; align-items: center; gap: 10px; }
 .hello img { width: 64px; height: 64px; border-radius: 14px; flex: none; display: block; }
 .hello p { margin: 0; }
+.muted-tip { display: block; margin-top: 4px; font-size: 13.5px; opacity: .8; }
+.notice button { font: inherit; font-weight: 800; color: var(--link); background: none; border: 0; padding: 0; cursor: pointer; text-decoration: underline; text-underline-offset: 2px; }
 .notice { align-self: center; max-width: 88%; text-align: center; background: var(--notice); color: var(--notice-ink); font-size: 12.5px; padding: 6px 12px; border-radius: 8px; margin: 2px 0 8px; box-shadow: 0 1px 1px var(--shadow); }
 .row { display: flex; flex-direction: column; max-width: 86%; min-width: 0; }
 .row.in { align-self: flex-start; } .row.out { align-self: flex-end; }
@@ -265,7 +267,7 @@ button:focus-visible, #entrada:focus-visible { outline: 2px solid var(--accent);
       <span class="pen" aria-hidden="true"></span>
     </div>
     <h2 class="fade f1" id="introTitle">Conocé a Tucu Tech</h2>
-    <p class="fade f1">Tu entrenador de entrevistas IT. Elegí tu situación, practicá preguntas reales y recibí una devolución al instante.</p>
+    <p class="fade f1">Tu entrenador de entrevistas IT: un asistente con inteligencia artificial. Elegí tu situación, practicá preguntas reales y recibí una devolución al instante.</p>
     <button class="enter fade f2" id="enter" type="button">Ingresar al chat</button>
     <small class="fade f3">Demo · Un proyecto de Interview para Escena Laboral, Tucumán</small>
     <button class="admin-link fade f3" id="adminLink" type="button">Ingresar al modo admin</button>
@@ -505,13 +507,13 @@ const letters = list => list.map((o, i) => ({ ...o, k: "abcdefghijklmnop"[i] }))
 
 function header(dayText) {
   chat.appendChild(el("div", "chip-day", dayText || "Hoy"));
-  chat.appendChild(el("div", "notice", "Espacio de práctica · Devoluciones orientativas"));
+  chat.appendChild(el("div", "notice", `Asistente automático con IA · Devoluciones orientativas · <button type="button" data-priv>Privacidad</button>`));
   lastSide = null;
 }
 
 /* ---------- Menú y preguntas ---------- */
 function menuOpts() {
-  return [L("1", LEVELS[1].menu, () => showLevel(1)), L("2", LEVELS[2].menu, () => showLevel(2)), L("3", LEVELS[3].menu, () => showLevel(3)), L("4", "Ver todas las preguntas", showAll), L("5", "Simular una entrevista por puesto", askRole)];
+  return [L("1", LEVELS[1].menu, () => showLevel(1)), L("2", LEVELS[2].menu, () => showLevel(2)), L("3", LEVELS[3].menu, () => showLevel(3)), L("4", "Simular una entrevista por puesto", askRole)];
 }
 function showMenu(text) { bot(`<p>${text || "Con gusto. ¿Qué te gustaría preparar?"}</p>`, menuOpts(), { type: "menu" }); }
 function showAll() {
@@ -576,15 +578,14 @@ function expAnswer(k) {
 function perfilOpts() {
   return [L("1", "Es mi primera entrevista", () => { camino = "Primera entrevista"; showLevel(1, "¡Qué bueno! Empecemos por lo primero que te van a preguntar."); }),
     L("2", "Quiero cambiar de trabajo o de sector", () => { camino = "Cambio de trabajo o sector"; showLevel(2, "¡Buenísimo! La clave es contar bien tu recorrido."); }),
-    L("3", "Quiero practicar para un puesto IT", () => { camino = "Puesto IT"; askRole(); }),
-    L("4", "Ver todas las preguntas", () => { camino = "Todas las preguntas"; showAll(); })];
+    L("3", "Quiero practicar para un puesto IT", () => { camino = "Puesto IT"; askRole(); })];
 }
 function welcome() {
   header("Hoy");
   const recent = seen.size && mem.lastVisit && Date.now() - mem.lastVisit < 7 * 86400000 ? nextPending() : null;
-  bot([`<div class="hello"><img src="${TUCU_IMG}" alt="Tucu, el robot asistente de Tucu Tech"><p>¡Hola! Soy <strong>Tucu</strong>, tu entrenador de entrevistas IT. Practicá preguntas reales y recibí una devolución.</p></div>`,
+  bot([`<div class="hello"><img src="${TUCU_IMG}" alt="Tucu, el robot asistente de Tucu Tech"><p>¡Hola! Soy <strong>Tucu</strong>, un asistente con IA que te ayuda a practicar entrevistas IT.</p></div>`,
        `<p>¿Qué querés practicar hoy?</p>`],
-    recent ? [...perfilOpts(), L("5", `Seguir donde lo dejé (${recent})`, () => showQuestion(recent, "Seguimos desde acá."))] : perfilOpts(), { type: "menu" });
+    recent ? [...perfilOpts(), L("4", `Seguir donde lo dejé (${recent})`, () => showQuestion(recent, "Seguimos desde acá."))] : perfilOpts(), { type: "menu" });
 }
 function since(ts) {
   if (!ts) return "";
@@ -642,7 +643,7 @@ function practiceOpts(id, sim, used) {
     list.push(L("", "Saltar esta pregunta", () => simNext(sim)));
     if (used.length >= 2) list.push(L("", "Terminar la simulación", () => simEnd(sim)));
   } else {
-    list.push(L("", "Elegir otra pregunta", showAll));
+    list.push(L("", "Elegir otra pregunta", () => showMenu("¿Qué te gustaría practicar ahora?")));
     if (used.length >= 2) list.push(L("", "Volver al menú", () => showMenu()));
   }
   return letters(list);
@@ -651,9 +652,11 @@ function practiceIntro(id, sim, again) {
   const q = qget(id);
   const head = sim ? `<p><strong>Pregunta ${sim.i + 1} de ${sim.ids.length}</strong>${RQ[id] ? ` · ${q.rol} ${q.sen}` : ""}</p>` : "";
   bot(head + (again ? `<p>¡Dale, probá de nuevo! La pregunta era:</p>` : `<p>Imaginá que estás frente a quien te entrevista:</p>`) +
-    `<p class="qtitle">“${q.t}”</p><p>Respondé escribiendo o con un audio, como lo dirías en la entrevista.</p>`,
+    `<p class="qtitle">“${q.t}”</p><p>Respondé escribiendo o con un audio, como lo dirías en la entrevista.${privTip()}</p>`,
     practiceOpts(id, sim, []), { type: "practice", q: id, sim, used: [] });
 }
+let privShown = false;
+function privTip() { if (privShown) return ""; privShown = true; return `<span class="muted-tip">Tu respuesta va a una IA para darte la devolución: no escribas datos personales.</span>`; }
 function exampleOf(id) { const q = qget(id); return q.ej || (q.exp ? EXP.a.ej : ""); }
 /* Después de usar las ayudas, Tucu corta el ida y vuelta: invita a responder o a pasar a otra cosa */
 function helpTail(used) {
@@ -773,7 +776,7 @@ function askLevel(rol) {
 }
 function startSim(rol, sen) {
   const own = Object.keys(RQ).filter(id => RQ[id].rol === rol && RQ[id].sen === sen);
-  const sim = { rol, sen, ids: ["1.1", ...own, "3.3"], i: 0, done: [] };
+  const sim = { rol, sen, ids: ["1.1", ...own, "3.3"], i: 0, done: [] }; lastSim = sim;
   bot(`<p>Arrancamos: <strong>${rol} · ${sen}</strong>. Respondé como en la entrevista, escribiendo o con un audio. Después de cada respuesta te doy una devolución, y si te trabás podés pedir una pista.</p>`,
     letters([L("", "Comenzar simulación", () => practiceIntro(sim.ids[0], sim)), L("", "Elegir otro puesto", askRole)]), { type: "simstart" });
 }
@@ -799,7 +802,7 @@ function limitSalary() {
 }
 function evaluation() {
   bot(`<p>Entiendo que quieras saberlo. No puedo predecir el resultado de una selección: eso lo decide cada empresa. Lo que sí puedo hacer es darte devoluciones para que practiques y llegues con más confianza. ¿Qué preferís?</p>`,
-    letters([L("", "Practicar la pregunta que más me preocupa", showAll), L("", "Volver al menú", () => showMenu()), L("", "Terminar", cierre)]), { type: "limit" });
+    letters([L("", "Practicar la pregunta que más me preocupa", () => showMenu("¿Sobre qué tema es la pregunta que más te preocupa?")), L("", "Volver al menú", () => showMenu()), L("", "Terminar", cierre)]), { type: "limit" });
 }
 function outOfScope() {
   bot(`<p>Entiendo. Yo no gestiono búsquedas ni puedo conseguirte un empleo: mi tarea es ayudarte a preparar la entrevista. Para conocer búsquedas, podés consultar a los orientadores de Escena Laboral. ¿Querés seguir preparándote?</p>`,
@@ -813,7 +816,7 @@ function notInFaq(t) {
   const ids = suggest(t); const list = (ids.length ? ids : ["1.1", "2.1", "3.1"]);
   bot([`<p>Buena pregunta. Todavía no la tengo entre mis preguntas, pero ya quedó registrada para sumarla.</p>`,
        `<p><strong>Consejo general:</strong> si te hacen una pregunta personal que no tiene que ver con el puesto, respondé breve y con amabilidad, y volvé a lo laboral.</p><p>${ids.length ? "Estas preguntas se parecen a lo que me escribiste:" : "Mientras tanto, estas preguntas te pueden servir:"}</p>`],
-    letters([...list.map(id => L("", Q[id].t, () => showQuestion(id))), L("", "Ver todas las preguntas", showAll)]), { type: "limit" });
+    letters([...list.map(id => L("", Q[id].t, () => showQuestion(id))), L("", "Volver al menú", () => showMenu())]), { type: "limit" });
 }
 function noEntiendo() {
   if (ctx.type === "exp") bot(`<p>Te lo explico de otra forma. Elegí lo que más se parezca a lo que querés contar, <strong>aunque no haya sido un trabajo en IT</strong>. Por ejemplo, si trabajaste en atención al cliente, elegí la <strong>b</strong>. Si ninguna se parece, elegí la <strong>f</strong> y te muestro otras ideas.</p>`, expList(ctx.extra), ctx);
@@ -823,11 +826,12 @@ function noEntiendo() {
 function noComprendo(t) {
   const ids = suggest(t);
   misses = ids.length ? 0 : misses + 1;
-  const opts = letters([...(ids.length ? ids : ["1.1", "2.1", "3.1"]).map(id => L("", Q[id].t, () => showQuestion(id))), L("", "Ver todas las preguntas", showAll), L("", "Volver al menú", () => showMenu())]);
+  // "Ver todas las preguntas" aparece solo como salida después del segundo intento sin entender
+  const opts = letters([...(ids.length ? ids : ["1.1", "2.1", "3.1"]).map(id => L("", Q[id].t, () => showQuestion(id))), ...(misses >= 2 ? [L("", "Ver todas las preguntas", showAll)] : []), L("", "Volver al menú", () => showMenu())]);
   const parts = [ids.length
     ? `<p>Quiero ayudarte bien. ¿Te referís a alguna de estas preguntas?</p>`
     : `<p>Quiero ayudarte bien, pero no encontré una pregunta que coincida con tu mensaje. Estas son las que más se consultan:</p>`];
-  if (misses >= 2) { misses = 0; parts.push(`<p>Si preferís hablar con una persona, también podés contactar a un orientador de Escena Laboral.</p>`); }
+  if (misses >= 2) { misses = 0; parts.push(`<p>Si te resulta más fácil, mirá la lista completa y elegí la pregunta que más se parezca a lo que buscás.</p>`); }
   else parts[0] += EXAMPLES;
   bot(parts, opts, { type: "suggest" });
 }
@@ -843,13 +847,16 @@ function handle(raw) {
   const opt = options.find(o => o.k && norm(o.k) === t);
   if (opt) return choose(opt);
   const has = re => re.test(t);
+  const corto = t.split(" ").length <= 8; // así una respuesta de práctica que diga "asesor" no se confunde con un pedido
+  if (corto && has(/(hablar|pasame|comunicame|quiero) (con )?(una |un )?(persona|humano|alguien)|persona real|orientador|asesor|operador/)) { misses = 0; return derivar(); }
+  if (corto && has(/privacidad|mis datos|guardan mis|se guarda|que hacen con/)) { misses = 0; return privacidad(); }
   if (has(/^(reiniciar|empezar de cero|borrar (mi )?avance)$/)) { seen = new Set(); mem = { seen: [], lastQ: null, lastVisit: null }; save(mem); return start(); }
   if (ctx.type === "practice") {
     const sim = ctx.sim, id = ctx.q, used = ctx.used || [];
     if (has(/^(no se|no lo se|ni idea|no se que (responder|decir)|me trabe)/)) return dontKnow(id, sim, used);
     if (has(/^(pista|ayuda|dame una pista|otra pista)/)) return hint(id, sim, used);
     if (has(/^(ejemplo|mostrame un ejemplo|un ejemplo|otro ejemplo)/)) return example(id, sim, used);
-    if (has(/^(saltar|siguiente|otra pregunta|pasar)/)) return sim ? simNext(sim) : showAll();
+    if (has(/^(saltar|siguiente|otra pregunta|pasar)/)) return sim ? simNext(sim) : showMenu("¿Qué te gustaría practicar ahora?");
     if (has(/^(volver|menu|volver al menu)$/)) return showMenu();
     if (has(/^(terminar|chau|salir)$/)) return cierre();
     if (has(/sueldo|salari|cuanto (me )?(van a )?pag|cuanto pido/)) { misses = 0; return limitSalary(); }
@@ -864,7 +871,6 @@ function handle(raw) {
     if (has(/^(hola|buenas|buen dia|buenas tardes|buenas noches|empezar|de nuevo|otra vez|nueva practica)/)) return newSession();
   }
   if (/^[123]$/.test(t)) { misses = 0; return showLevel(+t); }
-  if (t === "4") { misses = 0; return showAll(); }
   if (/^[123] ?[123]$/.test(t)) { misses = 0; return showQuestion(t.replace(" ", ".").replace(/^(\d)(\d)$/, "$1.$2")); }
   if (has(/no entiendo|no entendi|no comprendo|que tengo que (elegir|hacer)|como funciona/)) { misses = 0; return noEntiendo(); }
   if (has(/sueldo|salari|pagar|pagan|cobr|plata|cuanto gan/)) { misses = 0; return limitSalary(); }
@@ -968,6 +974,29 @@ form.addEventListener("submit", e => {
   input.value = ""; userMsg(v); handle(v);
 });
 
+
+/* ---------- Pedir una persona: en esta versión no hay atención humana ----------
+   Tucu lo dice con claridad, avisa que está previsto para una próxima versión y ofrece otra salida. */
+let lastSim = null;
+function derivar() {
+  const enPractica = ctx.type === "practice" ? { q: ctx.q, sim: ctx.sim } : null;
+  const opts = [];
+  if (enPractica) opts.push(L("", "Seguir con la pregunta", () => practiceIntro(enPractica.q, enPractica.sim, true)));
+  opts.push(L("", "Volver al menú", () => showMenu()), L("", "Terminar", cierre));
+  bot(`<p>Entiendo que quieras hablar con alguien. En esta versión no puedo pasarte con una persona: es algo que tenemos previsto para una próxima versión. Mientras tanto, puedo ayudarte a seguir practicando. ¿Qué preferís?</p>`,
+    letters(opts), { type: "handoff" });
+}
+/* ---------- Privacidad: qué pasa con tus datos ---------- */
+function privacidad() {
+  bot([`<p><strong>Qué pasa con tus datos</strong></p><ul>
+<li><strong>Tu avance</strong> (qué preguntas viste) queda guardado solo en este navegador. Lo borrás con el botón de reiniciar, arriba a la derecha.</li>
+<li><strong>Tus respuestas</strong> se envían a una IA (Gemini, de Google) solo para generar la devolución. Nosotros no las guardamos.</li>
+<li><strong>Los audios</strong> los pasa a texto tu navegador; en Chrome usa un servicio de Google. Nosotros no guardamos el audio.</li>
+<li><strong>La encuesta</strong> guarda el puntaje, tu comentario, el camino que elegiste y cuántas preguntas practicaste, sin nombre ni contacto.</li></ul>`,
+       `<p>Por eso te pido que <strong>no escribas datos personales</strong>, como tu nombre completo, teléfono, DNI o el nombre de una empresa donde trabajaste. Para practicar, podés inventarlos.</p>`],
+    letters([L("", "Seguir practicando", () => showMenu("¡Dale! ¿Qué te gustaría practicar?")), L("", "Borrar mi avance", () => { seen = new Set(); mem = { seen: [], lastQ: null, lastVisit: null }; save(mem); start(); })]), { type: "privacy" });
+}
+chat.addEventListener("click", e => { if (e.target.closest("[data-priv]") && !busy) { userMsg("Privacidad"); privacidad(); } });
 
 /* ---------- Encuesta de feedback ----------
    Online, cada respuesta se guarda en Netlify (Forms → "feedback"). En la vista previa de Claude no se envía nada. */
@@ -1127,7 +1156,7 @@ document.getElementById("restart").addEventListener("click", () => {
 });
 function start() {
   gen++; lock(false);
-  chat.innerHTML = ""; today = new Set(); ctx = {}; misses = 0; lastSide = null; practiced = []; camino = "";
+  chat.innerHTML = ""; today = new Set(); ctx = {}; misses = 0; lastSide = null; practiced = []; camino = ""; lastSim = null; privShown = false;
   welcome();
   persist();
 }
