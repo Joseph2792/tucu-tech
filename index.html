@@ -430,11 +430,13 @@ function suggest(t) {
 const EXAMPLES = `<p class="hint">Por ejemplo, podés escribir: <em>“cómo me presento”</em>, <em>“tengo que explicar algo técnico”</em> o <em>“me cuesta hablar de mis fortalezas”</em>. También podés mandarme un audio.</p>`;
 
 
-/* ---------- Estado y memoria del dispositivo ---------- */
+/* ---------- Estado de la sesión ----------
+   El avance no se guarda en el dispositivo: vive solo mientras la página está abierta.
+   Al recargar o reiniciar, la conversación empieza de cero. */
 const KEY = "tucu.v1";
-const load = () => { try { return JSON.parse(localStorage.getItem(KEY)) || null; } catch { return null; } };
-const save = d => { try { localStorage.setItem(KEY, JSON.stringify(d)); } catch {} };
-let mem = load() || { seen: [], lastQ: null, lastVisit: null };
+try { localStorage.removeItem(KEY); } catch {} // borra el avance que hayan guardado versiones anteriores
+const save = () => {};
+let mem = { seen: [], lastQ: null, lastVisit: null };
 let seen = new Set(mem.seen), today = new Set();
 let ctx = {}, options = [], misses = 0, busy = false;
 function persist() { mem.seen = [...seen]; mem.lastVisit = Date.now(); save(mem); }
@@ -582,10 +584,9 @@ function perfilOpts() {
 }
 function welcome() {
   header("Hoy");
-  const recent = seen.size && mem.lastVisit && Date.now() - mem.lastVisit < 7 * 86400000 ? nextPending() : null;
   bot([`<div class="hello"><img src="${TUCU_IMG}" alt="Tucu, el robot asistente de Tucu Tech"><p>¡Hola! Soy <strong>Tucu</strong>, un asistente con IA que te ayuda a practicar entrevistas IT.</p></div>`,
        `<p>¿Qué querés practicar hoy?</p>`],
-    recent ? [...perfilOpts(), L("4", `Seguir donde lo dejé (${recent})`, () => showQuestion(recent, "Seguimos desde acá."))] : perfilOpts(), { type: "menu" });
+    perfilOpts(), { type: "menu" });
 }
 function since(ts) {
   if (!ts) return "";
@@ -788,7 +789,7 @@ function simEnd(sim) {
   const done = sim.done.filter((x, i, a) => a.indexOf(x) === i);
   const parts = [done.length
     ? `<p>¡Terminaste la simulación de <strong>${sim.rol} · ${sim.sen}</strong>! Respondiste ${done.length === 1 ? "1 pregunta" : done.length + " preguntas"}:</p><ul>${done.map(id => `<li>${qget(id).t}</li>`).join("")}</ul>`
-    : `<p>Cerramos la simulación de <strong>${sim.rol} · ${sim.sen}</strong>. Podés retomarla cuando quieras.</p>`,
+    : `<p>Cerramos la simulación de <strong>${sim.rol} · ${sim.sen}</strong>. Podés volver a hacerla cuando quieras.</p>`,
     `<p>Para la entrevista real: repasá las devoluciones, practicá en voz alta las respuestas que más te costaron y prepará una pregunta para hacerle a quien te entreviste.</p>`];
   bot(parts, letters([L("", "Simular con otro puesto o nivel", askRole), L("", "Volver al menú", () => showMenu()), L("", "Terminar", cierre)]), { type: "simend" });
 }
@@ -989,12 +990,12 @@ function derivar() {
 /* ---------- Privacidad: qué pasa con tus datos ---------- */
 function privacidad() {
   bot([`<p><strong>Qué pasa con tus datos</strong></p><ul>
-<li><strong>Tu avance</strong> (qué preguntas viste) queda guardado solo en este navegador. Lo borrás con el botón de reiniciar, arriba a la derecha.</li>
+<li><strong>Tu avance</strong> no se guarda: se borra al recargar la página o al tocar el botón de reiniciar.</li>
 <li><strong>Tus respuestas</strong> se envían a una IA (Gemini, de Google) solo para generar la devolución. Nosotros no las guardamos.</li>
 <li><strong>Los audios</strong> los pasa a texto tu navegador; en Chrome usa un servicio de Google. Nosotros no guardamos el audio.</li>
 <li><strong>La encuesta</strong> guarda el puntaje, tu comentario, el camino que elegiste y cuántas preguntas practicaste, sin nombre ni contacto.</li></ul>`,
        `<p>Por eso te pido que <strong>no escribas datos personales</strong>, como tu nombre completo, teléfono, DNI o el nombre de una empresa donde trabajaste. Para practicar, podés inventarlos.</p>`],
-    letters([L("", "Seguir practicando", () => showMenu("¡Dale! ¿Qué te gustaría practicar?")), L("", "Borrar mi avance", () => { seen = new Set(); mem = { seen: [], lastQ: null, lastVisit: null }; save(mem); start(); })]), { type: "privacy" });
+    letters([L("", "Seguir practicando", () => showMenu("¡Dale! ¿Qué te gustaría practicar?")), L("", "Empezar de nuevo", () => { seen = new Set(); mem = { seen: [], lastQ: null, lastVisit: null }; save(mem); start(); })]), { type: "privacy" });
 }
 chat.addEventListener("click", e => { if (e.target.closest("[data-priv]") && !busy) { userMsg("Privacidad"); privacidad(); } });
 
