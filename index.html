@@ -201,9 +201,11 @@ button:focus-visible, #entrada:focus-visible { outline: 2px solid var(--accent);
 .fb-thanks h2 { margin: 0; font-size: 20px; font-weight: 800; }
 .fb-thanks p { margin: 0; color: var(--muted); font-size: 15px; max-width: 32ch; }
 .hp { position: absolute; left: -9999px; }
-.crit { display: flex; flex-direction: column; gap: 12px; }
+.crit { display: flex; flex-direction: column; gap: 10px; border-top: 1px solid var(--line); padding-top: 14px; }
+.crit-head { margin: 0; font-size: 15px; } .crit-head span { color: var(--muted); font-size: 13px; font-weight: 400; }
 .crit fieldset { border-top: 1px solid var(--line); padding-top: 10px; }
 .crit fieldset:first-of-type { border-top: 0; padding-top: 0; }
+.crit legend { font-weight: 600 !important; }
 .crit legend { float: left; width: 100%; padding: 0; font-size: 14.5px; margin-bottom: 6px; font-weight: 700; }
 .crit .seg { clear: both; }
 .seg { display: grid; grid-template-columns: 1fr 1fr 1.3fr; gap: 6px; }
@@ -337,6 +339,15 @@ button:focus-visible, #entrada:focus-visible { outline: 2px solid var(--accent);
           </div>
           <div class="rate-ends" aria-hidden="true"><span>Nada útil</span><span>Muy útil</span></div>
         </fieldset>
+        <div class="crit">
+          <p class="crit-head"><strong>Contanos un poco más</strong> <span>(opcional · si algo no aplica, elegí «No lo usé»)</span></p>
+          <fieldset><legend>¿Te quedó claro desde el inicio que Tucu es una IA y qué podía hacer?</legend><div class="seg"><label><input type="radio" name="ia" value="si"><span>Sí</span></label><label><input type="radio" name="ia" value="no"><span>No</span></label><label><input type="radio" name="ia" value="no_uso"><span>No lo usé</span></label></div></fieldset>
+          <fieldset><legend>¿Las respuestas fueron cortas y fáciles de leer?</legend><div class="seg"><label><input type="radio" name="breves" value="si"><span>Sí</span></label><label><input type="radio" name="breves" value="no"><span>No</span></label><label><input type="radio" name="breves" value="no_uso"><span>No lo usé</span></label></div></fieldset>
+          <fieldset><legend>¿Siempre supiste qué podías hacer después?</legend><div class="seg"><label><input type="radio" name="siguiente" value="si"><span>Sí</span></label><label><input type="radio" name="siguiente" value="no"><span>No</span></label><label><input type="radio" name="siguiente" value="no_uso"><span>No lo usé</span></label></div></fieldset>
+          <fieldset><legend>¿Te entendió cuando escribiste con tus palabras o mandaste un audio?</legend><div class="seg"><label><input type="radio" name="entendio" value="si"><span>Sí</span></label><label><input type="radio" name="entendio" value="no"><span>No</span></label><label><input type="radio" name="entendio" value="no_uso"><span>No lo usé</span></label></div></fieldset>
+          <fieldset><legend>¿La devolución te sirvió para mejorar tu respuesta?</legend><div class="seg"><label><input type="radio" name="devolucion" value="si"><span>Sí</span></label><label><input type="radio" name="devolucion" value="no"><span>No</span></label><label><input type="radio" name="devolucion" value="no_uso"><span>No lo usé</span></label></div></fieldset>
+          <fieldset><legend>¿El tono te pareció cercano y respetuoso?</legend><div class="seg"><label><input type="radio" name="tono" value="si"><span>Sí</span></label><label><input type="radio" name="tono" value="no"><span>No</span></label><label><input type="radio" name="tono" value="no_uso"><span>No lo usé</span></label></div></fieldset>
+        </div>
         <div>
           <label class="lbl" for="fbText">¿Qué te sirvió y qué mejorarías? <span style="font-weight:400;color:var(--muted)">(opcional)</span></label>
           <textarea id="fbText" name="comentario" maxlength="1000" placeholder="Por ejemplo: la devolución me ayudó, pero me gustaría más preguntas de QA."></textarea>
@@ -351,32 +362,11 @@ button:focus-visible, #entrada:focus-visible { outline: 2px solid var(--accent);
       <div class="fb-thanks" id="fbThanks" hidden>
         <img class="fb-av" alt="">
         <h2 tabindex="-1" id="fbThanksTitle">¡Gracias por tu opinión!</h2>
-        <p>¿Nos ayudás con <strong>6 preguntas rápidas</strong> de sí o no? Así vemos si Tucu cumple lo que nos propusimos.</p>
-        <div class="fb-actions" style="width:100%"><button class="enter" id="critOpen" type="button">Responder 6 preguntas</button><button class="ghost fb-again" type="button">Volver a practicar con Tucu</button></div>
+        <p>La vamos a leer para mejorar a Tucu. Cuando quieras, seguimos practicando.</p>
+        <div class="fb-actions" style="width:100%"><button class="enter fb-again" type="button">Volver a practicar con Tucu</button></div>
       </div>
     </form>
-    <form name="criterios" id="critForm" method="POST" data-netlify="true" netlify-honeypot="bot-field" hidden>
-      <input type="hidden" name="form-name" value="criterios">
-      <input type="hidden" name="camino" id="critCamino">
-      <p class="hp"><label>No completar <input name="bot-field" tabindex="-1" autocomplete="off"></label></p>
-      <div class="crit">
-        <div class="fb-head"><img class="fb-av" alt=""><div><h2 id="critTitle" tabindex="-1">6 preguntas rápidas</h2><p>Si alguna no aplica, elegí «No lo usé».</p></div></div>
-        <fieldset><legend>¿Te quedó claro desde el inicio que Tucu es una IA y qué podía hacer?</legend><div class="seg"><label><input type="radio" name="ia" value="si"><span>Sí</span></label><label><input type="radio" name="ia" value="no"><span>No</span></label><label><input type="radio" name="ia" value="no_uso"><span>No lo usé</span></label></div></fieldset>
-        <fieldset><legend>¿Las respuestas fueron cortas y fáciles de leer?</legend><div class="seg"><label><input type="radio" name="breves" value="si"><span>Sí</span></label><label><input type="radio" name="breves" value="no"><span>No</span></label><label><input type="radio" name="breves" value="no_uso"><span>No lo usé</span></label></div></fieldset>
-        <fieldset><legend>¿Siempre supiste qué podías hacer después?</legend><div class="seg"><label><input type="radio" name="siguiente" value="si"><span>Sí</span></label><label><input type="radio" name="siguiente" value="no"><span>No</span></label><label><input type="radio" name="siguiente" value="no_uso"><span>No lo usé</span></label></div></fieldset>
-        <fieldset><legend>¿Te entendió cuando escribiste con tus palabras o mandaste un audio?</legend><div class="seg"><label><input type="radio" name="entendio" value="si"><span>Sí</span></label><label><input type="radio" name="entendio" value="no"><span>No</span></label><label><input type="radio" name="entendio" value="no_uso"><span>No lo usé</span></label></div></fieldset>
-        <fieldset><legend>¿La devolución te sirvió para mejorar tu respuesta?</legend><div class="seg"><label><input type="radio" name="devolucion" value="si"><span>Sí</span></label><label><input type="radio" name="devolucion" value="no"><span>No</span></label><label><input type="radio" name="devolucion" value="no_uso"><span>No lo usé</span></label></div></fieldset>
-        <fieldset><legend>¿El tono te pareció cercano y respetuoso?</legend><div class="seg"><label><input type="radio" name="tono" value="si"><span>Sí</span></label><label><input type="radio" name="tono" value="no"><span>No</span></label><label><input type="radio" name="tono" value="no_uso"><span>No lo usé</span></label></div></fieldset>
-        <p class="fb-err" id="critErr" role="alert" hidden></p>
-        <div class="fb-actions"><button class="enter" id="critSend" type="submit" disabled>Enviar respuestas</button><button class="ghost fb-again" type="button">Saltear y volver a practicar</button></div>
-      </div>
-    </form>
-    <div class="fb-thanks" id="critDone" hidden>
-      <img class="fb-av" alt="">
-      <h2 tabindex="-1" id="critDoneTitle">¡Listo, gracias!</h2>
-      <p>Tus respuestas nos ayudan a saber qué cumple Tucu y qué mejorar.</p>
-      <div class="fb-actions" style="width:100%"><button class="enter fb-again" type="button">Volver a practicar con Tucu</button></div>
-    </div>
+    
   </div>
 </div>
 <div class="wrap">
@@ -1047,7 +1037,6 @@ fb.querySelectorAll(".fb-av").forEach(i => i.src = TUCU_IMG);
 function openFb() {
   fbForm.reset(); fbSend.disabled = true; fbSend.textContent = "Enviar feedback"; fbErr.hidden = true;
   document.getElementById("fbAsk").style.display = "flex"; document.getElementById("fbThanks").hidden = true;
-  fbForm.hidden = false; critForm.hidden = true; critForm.reset(); critSend.disabled = true; critSend.textContent = "Enviar respuestas"; critErr.hidden = true; document.getElementById("critDone").hidden = true;
   document.getElementById("fbCamino").value = camino || "Sin elegir";
   document.getElementById("fbPracticadas").value = String(practiced.length);
   fbOpener = document.activeElement; fb.hidden = false;
@@ -1060,38 +1049,6 @@ document.getElementById("fbClose").addEventListener("click", closeFb);
 fb.addEventListener("click", e => { if (e.target === fb) closeFb(); });
 addEventListener("keydown", e => { if (e.key === "Escape" && !fb.hidden) closeFb(); });
 fb.querySelectorAll(".fb-again").forEach(b => b.addEventListener("click", () => { fb.hidden = true; if (!busy) newSession(); }));
-/* Segunda parte (opcional): 6 criterios del bench con Sí / No / No lo usé. Se guarda en el formulario "criterios". */
-const critForm = document.getElementById("critForm"), critSend = document.getElementById("critSend"), critErr = document.getElementById("critErr");
-const CRIT_N = 6;
-async function enviarForm(form) {
-  if (window.claude) return true; // vista previa: no hay dónde guardar
-  try {
-    const r = await fetch("/", { method: "POST", headers: { "Content-Type": "application/x-www-form-urlencoded" }, body: new URLSearchParams(new FormData(form)).toString(), signal: AbortSignal.timeout(10000) });
-    return r.ok;
-  } catch { return false; }
-}
-document.getElementById("critOpen").addEventListener("click", () => {
-  fbForm.hidden = true; critForm.hidden = false;
-  document.getElementById("critCamino").value = camino || "Sin elegir";
-  fb.querySelector(".fb-card").scrollTop = 0; fb.scrollTop = 0;
-  document.getElementById("critTitle").focus({ preventScroll: true });
-});
-critForm.addEventListener("change", () => {
-  const n = critForm.querySelectorAll("input[type=radio]:checked").length;
-  critSend.disabled = n < CRIT_N; if (n === CRIT_N) critErr.hidden = true;
-});
-critForm.addEventListener("submit", async e => {
-  e.preventDefault();
-  if (critForm.querySelectorAll("input[type=radio]:checked").length < CRIT_N) { critErr.textContent = "Respondé las 6 preguntas. Si alguna no aplica, elegí «No lo usé»."; critErr.hidden = false; return; }
-  critSend.disabled = true; critSend.textContent = "Enviando…"; critErr.hidden = true;
-  if (await enviarForm(critForm)) {
-    critForm.hidden = true; document.getElementById("critDone").hidden = false;
-    document.getElementById("critDoneTitle").focus({ preventScroll: true });
-  } else {
-    critSend.disabled = false; critSend.textContent = "Enviar respuestas";
-    critErr.textContent = "No pudimos enviar tus respuestas. Revisá la conexión y probá de nuevo."; critErr.hidden = false;
-  }
-});
 fbForm.addEventListener("submit", async e => {
   e.preventDefault();
   if (!fbForm.querySelector("input[name=puntaje]:checked")) { fbErr.textContent = "Elegí un puntaje del 1 al 5."; fbErr.hidden = false; return; }
@@ -1192,7 +1149,7 @@ const CRITERIOS = [
 ];
 function critPanel() {
   const n = admCrit.length;
-  if (!n) return `<section class="panel" aria-labelledby="hCrit"><h2 id="hCrit">Cumplimiento de criterios</h2><p class="empty" style="padding:8px 0">Todavía nadie respondió las 6 preguntas de sí o no. Aparecen después de la encuesta, como paso opcional.</p></section>`;
+  if (!n) return `<section class="panel" aria-labelledby="hCrit"><h2 id="hCrit">Cumplimiento de criterios</h2><p class="empty" style="padding:8px 0">Todavía nadie respondió las preguntas de sí o no de la encuesta.</p></section>`;
   const filas = CRITERIOS.map(c => {
     const si = admCrit.filter(x => x[c.k] === "si").length, no = admCrit.filter(x => x[c.k] === "no").length, base = si + no;
     return { ...c, si, base, pct: base ? Math.round(si / base * 100) : null };

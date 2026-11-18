@@ -46,11 +46,12 @@ export default async (req, context) => {
     }));
     // Encuesta de criterios: cada campo vale "si", "no" o "no_uso"
     const CLAVES = ["ia", "breves", "siguiente", "entendio", "devolucion", "tono"];
-    const criterios = cr.map(s => {
+    // Los criterios vienen en la misma encuesta ("feedback"); "criterios" queda por las respuestas de una versión anterior.
+    const criterios = [...fb, ...cr].map(s => {
       const o = { fecha: s.created_at, camino: s.data?.camino || "" };
       for (const k of CLAVES) { const v = String(s.data?.[k] || ""); o[k] = ["si", "no", "no_uso"].includes(v) ? v : ""; }
       return o;
-    });
+    }).filter(o => CLAVES.some(k => o[k]));
     return Response.json({ items, criterios }, { headers: { "Cache-Control": "no-store" } });
   } catch (e) {
     return Response.json({ error: e.message?.startsWith("Netlify") ? e.message : "No se pudo conectar con Netlify." }, { status: 502 });
