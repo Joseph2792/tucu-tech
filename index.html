@@ -800,10 +800,10 @@ async function feedback(id, ans, sim) {
 /* ---------- Simulación por puesto ---------- */
 function askRole() {
   bot(`<p>¡Dale! Armemos una <strong>simulación de 5 preguntas</strong>: una de presentación, tres de tu rol y una situación del día a día. ¿Para qué puesto te estás preparando?</p>`,
-    letters(ROLES.map(r => L("", r, () => askLevel(r)))), { type: "role" });
+    letters([...ROLES.map(r => L("", r, () => askLevel(r))), L("", "Terminar", cierre)]), { type: "role" });
 }
 function askLevel(rol) {
-  bot(`<p>Perfecto: <strong>${rol}</strong>. ¿Para qué nivel?</p>`, letters(SENS.map(s => L("", s, () => startSim(rol, s)))), { type: "level-pick", rol });
+  bot(`<p>Perfecto: <strong>${rol}</strong>. ¿Para qué nivel?</p>`, letters([...SENS.map(s => L("", s, () => startSim(rol, s))), L("", "Elegir otro puesto", askRole), L("", "Terminar", cierre)]), { type: "level-pick", rol });
 }
 function startSim(rol, sen) {
   const own = Object.keys(RQ).filter(id => RQ[id].rol === rol && RQ[id].sen === sen);
