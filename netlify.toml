@@ -1,4 +1,12 @@
-# Configuracion de Netlify para Tucu Tech
+# Configuración de Netlify para Tucu Tech
+# La página está en la raíz y la función de devolución (feedback.mjs) también.
 [build]
-publish = "."
-functions = "."
+  publish = "."
+  functions = "."
+
+# Que el navegador siempre consulte si hay una versión nueva de la página
+# (así no hace falta borrar la caché después de cada actualización).
+[[headers]]
+  for = "/*"
+  [headers.values]
+    Cache-Control = "no-cache, must-revalidate"
